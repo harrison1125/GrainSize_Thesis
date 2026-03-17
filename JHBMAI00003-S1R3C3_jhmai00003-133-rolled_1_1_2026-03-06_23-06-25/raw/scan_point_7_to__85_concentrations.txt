@@ -1,0 +1,726 @@
+SOURCE: scan_point_7.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  5.952955e+02  3.55e+02  1  1  
+V  K  3.464352e+02  2.06e+02  0.3629  0.3629  
+
+SOURCE: scan_point_88.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  1.842884e+01  2.52e+01  1  1  
+V  K  8.719379e+01  6.48e+01  2.95  2.95  
+
+SOURCE: scan_point_63.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  2.962285e+04  1.73e+03  1  1  
+V  K  1.391315e+04  8.18e+02  0.2929  0.2929  
+
+SOURCE: scan_point_77.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  9.059724e+00  1.66e+01  1  1  
+V  K  5.142591e+00  1.80e+01  0.3539  0.3539  
+
+SOURCE: scan_point_76.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  2.002577e+02  1.32e+02  1  1  
+V  K  5.467512e+02  1.90e+02  1.702  1.702  
+
+SOURCE: scan_point_62.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.133566e+04  3.78e+02  1  1  
+V  K  1.480854e+04  2.04e+02  0.2947  0.2947  
+
+SOURCE: scan_point_89.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.982873e+04  3.03e+02  1  1  
+V  K  1.659265e+04  1.74e+02  0.2598  0.2598  
+
+SOURCE: scan_point_6.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  7.051655e+02  5.36e+02  1  1  
+V  K  4.058195e+02  3.13e+02  0.3588  0.3588  
+
+SOURCE: scan_point_4.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  6.689923e-01  1.46e+01  1  1  
+V  K  1.236932e+01  1.65e+01  11.53  11.53  
+
+SOURCE: scan_point_48.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.556532e+04  3.28e+02  1  1  
+V  K  1.671161e+04  1.91e+02  0.293  0.293  
+
+SOURCE: scan_point_74.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  2.962649e+04  9.19e+02  1  1  
+V  K  1.332541e+04  4.18e+02  0.2805  0.2805  
+
+SOURCE: scan_point_60.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.363448e+04  6.91e+02  1  1  
+V  K  1.556736e+04  3.34e+02  0.2886  0.2886  
+
+SOURCE: scan_point_61.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.196940e+04  1.34e+03  1  1  
+V  K  1.492924e+04  6.20e+02  0.2912  0.2912  
+
+SOURCE: scan_point_75.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.200640e+04  3.48e+02  1  1  
+V  K  1.409470e+04  1.88e+02  0.2746  0.2746  
+
+SOURCE: scan_point_49.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.479067e+04  4.38e+02  1  1  
+V  K  1.710583e+04  2.40e+02  0.3066  0.3066  
+
+SOURCE: scan_point_5.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  2.539507e+02  1.21e+02  1  1  
+V  K  5.422118e+02  2.25e+02  1.331  1.331  
+
+SOURCE: scan_point_1.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.972686e+00  1.42e+01  1  1  
+V  K  2.406649e+01  4.40e+01  3.777  3.777  
+
+SOURCE: scan_point_71.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.630897e+04  6.29e+02  1  1  
+V  K  1.650264e+04  3.09e+02  0.2834  0.2834  
+
+SOURCE: scan_point_65.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  5.946104e+01  1.32e+01  1  1  
+V  K  1.411119e+01  6.84e+01  0.148  0.148  
+
+SOURCE: scan_point_59.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.442173e+04  3.19e+02  1  1  
+V  K  1.623186e+04  1.85e+02  0.294  0.294  
+
+SOURCE: scan_point_58.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.379662e+04  5.77e+02  1  1  
+V  K  1.618721e+04  2.97e+02  0.2986  0.2986  
+
+SOURCE: scan_point_64.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  2.891991e+04  5.02e+02  1  1  
+V  K  1.342051e+04  2.55e+02  0.2894  0.2894  
+
+SOURCE: scan_point_70.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.623142e+04  1.83e+03  1  1  
+V  K  1.642003e+04  8.81e+02  0.2826  0.2826  
+
+SOURCE: scan_point_0.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  1.001813e+01  2.31e+01  1  1  
+V  K  8.642936e+00  2.49e+01  0.5379  0.5379  
+
+SOURCE: scan_point_99.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.582532e+01  1.47e+02  1  1  
+V  K  1.067244e+02  1.90e+03  1.858  1.858  
+
+SOURCE: scan_point_2.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  8.064972e+01  1.49e+01  1  1  
+V  K  1.451811e+02  6.95e+01  1.122  1.122  
+
+SOURCE: scan_point_66.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  1.047933e+05  8.08e+03  1  1  
+V  K  1.061453e+05  1.02e+04  0.6316  0.6316  
+
+SOURCE: scan_point_72.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.500274e+04  1.38e+03  1  1  
+V  K  1.571484e+04  6.28e+02  0.2799  0.2799  
+
+SOURCE: scan_point_73.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.805571e+04  4.76e+02  1  1  
+V  K  1.630265e+04  2.36e+02  0.2671  0.2671  
+
+SOURCE: scan_point_67.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.541776e+04  2.05e+03  1  1  
+V  K  1.627096e+04  9.46e+02  0.2865  0.2865  
+
+SOURCE: scan_point_3.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  1.153108e+02  4.48e+02  1  1  
+V  K  2.700003e+01  2.02e+02  0.146  0.146  
+
+SOURCE: scan_point_98.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  4.639014e+01  7.45e+01  1  1  
+V  K  5.013279e+01  2.32e+01  0.6738  0.6738  
+
+SOURCE: scan_point_28.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.759203e+04  2.59e+02  1  1  
+V  K  1.828337e+04  1.72e+02  0.3033  0.3033  
+
+SOURCE: scan_point_14.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  1.344222e+04  8.25e+02  1  1  
+V  K  9.127073e+03  5.60e+02  0.4234  0.4234  
+
+SOURCE: scan_point_120.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  2.918141e+01  2.96e+01  1  1  
+V  K  2.717333e+01  3.89e+01  0.5806  0.5806  
+
+SOURCE: scan_point_108.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.196636e+04  2.16e+02  1  1  
+V  K  1.273195e+04  1.39e+02  0.2483  0.2483  
+
+SOURCE: scan_point_109.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  2.971708e+01  1.14e+02  1  1  
+V  K  3.496876e+01  1.39e+02  0.7337  0.7337  
+
+SOURCE: scan_point_15.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  1.075110e+04  3.36e+02  1  1  
+V  K  7.738165e+03  2.45e+02  0.4488  0.4488  
+
+SOURCE: scan_point_29.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.977061e+04  3.49e+02  1  1  
+V  K  1.895151e+04  2.05e+02  0.2971  0.2971  
+
+SOURCE: scan_point_17.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  4.032770e+04  2.31e+02  1  1  
+V  K  2.032334e+04  1.69e+02  0.3142  0.3142  
+
+SOURCE: scan_point_16.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.544006e+04  2.23e+03  1  1  
+V  K  1.790159e+04  1.14e+03  0.315  0.315  
+
+SOURCE: scan_point_12.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  1.889290e+04  9.94e+02  1  1  
+V  K  1.230805e+04  6.52e+02  0.4062  0.4062  
+
+SOURCE: scan_point_13.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  1.688337e+04  3.12e+02  1  1  
+V  K  1.114108e+04  2.16e+02  0.4115  0.4115  
+
+SOURCE: scan_point_11.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  5.208874e+01  4.54e+02  1  1  
+V  K  3.082642e+01  2.45e+02  0.369  0.369  
+
+SOURCE: scan_point_39.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  4.413739e+04  2.24e+03  1  1  
+V  K  2.002011e+04  1.02e+03  0.2828  0.2828  
+
+SOURCE: scan_point_119.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  1.186250e+02  6.22e+01  1  1  
+V  K  2.764869e+02  1.09e+02  1.453  1.453  
+
+SOURCE: scan_point_118.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.803821e+02  9.65e+01  1  1  
+V  K  4.643548e+02  8.49e+01  0.7612  0.7612  
+
+SOURCE: scan_point_38.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  4.397040e+04  1.98e+03  1  1  
+V  K  2.002214e+04  9.12e+02  0.2839  0.2839  
+
+SOURCE: scan_point_10.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  2.321755e+02  3.98e+01  1  1  
+V  K  2.413156e+02  3.28e+01  0.6481  0.6481  
+
+SOURCE: scan_point_21.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  4.833585e+02  7.01e+01  1  1  
+V  K  6.600980e+02  5.46e+01  0.8515  0.8515  
+
+SOURCE: scan_point_35.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  2.975661e+04  1.95e+02  1  1  
+V  K  1.557726e+04  1.46e+02  0.3264  0.3264  
+
+SOURCE: scan_point_101.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.436108e+04  4.66e+02  1  1  
+V  K  1.407513e+04  2.21e+02  0.2554  0.2554  
+
+SOURCE: scan_point_115.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  1.206858e+03  5.53e+02  1  1  
+V  K  1.194942e+02  6.09e+01  0.06174  0.06174  
+
+SOURCE: scan_point_114.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  2.381956e+03  6.85e+02  1  1  
+V  K  2.179645e+02  6.90e+01  0.05706  0.05706  
+
+SOURCE: scan_point_100.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.691626e+04  4.11e+02  1  1  
+V  K  1.541817e+04  2.07e+02  0.2604  0.2604  
+
+SOURCE: scan_point_34.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  2.658255e+04  3.37e+02  1  1  
+V  K  1.415882e+04  1.99e+02  0.3321  0.3321  
+
+SOURCE: scan_point_20.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.481109e+04  7.69e+02  1  1  
+V  K  1.717451e+04  3.96e+02  0.3076  0.3076  
+
+SOURCE: scan_point_36.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.149529e+04  1.03e+03  1  1  
+V  K  1.636974e+04  5.42e+02  0.3241  0.3241  
+
+SOURCE: scan_point_22.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  2.244197e+01  4.32e+01  1  1  
+V  K  3.519328e+01  3.14e+01  0.9778  0.9778  
+
+SOURCE: scan_point_116.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  1.984804e+02  3.91e+01  1  1  
+V  K  1.575825e+02  2.49e+01  0.4951  0.4951  
+
+SOURCE: scan_point_102.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.134681e+04  1.65e+03  1  1  
+V  K  1.362410e+04  7.25e+02  0.271  0.271  
+
+SOURCE: scan_point_103.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.228618e+04  3.80e+02  1  1  
+V  K  1.363078e+04  1.94e+02  0.2632  0.2632  
+
+SOURCE: scan_point_117.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.152675e+00  3.53e+02  1  1  
+V  K  1.119049e+00  2.03e+02  0.2213  0.2213  
+
+SOURCE: scan_point_23.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.037450e+04  8.48e+02  1  1  
+V  K  1.573856e+04  4.53e+02  0.3231  0.3231  
+
+SOURCE: scan_point_37.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.741908e+04  2.20e+02  1  1  
+V  K  1.868630e+04  1.62e+02  0.3114  0.3114  
+
+SOURCE: scan_point_33.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  4.159012e+01  4.59e+01  1  1  
+V  K  1.391713e+01  7.50e+01  0.2087  0.2087  
+
+SOURCE: scan_point_27.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.431401e+04  1.27e+03  1  1  
+V  K  1.686478e+04  6.30e+02  0.3065  0.3065  
+
+SOURCE: scan_point_113.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  2.736576e+03  6.42e+02  1  1  
+V  K  1.069867e+02  3.85e+01  0.02438  0.02438  
+
+SOURCE: scan_point_107.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.747186e+04  2.32e+03  1  1  
+V  K  1.503406e+04  9.49e+02  0.2502  0.2502  
+
+SOURCE: scan_point_106.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  4.224258e+04  2.30e+02  1  1  
+V  K  1.622179e+04  1.57e+02  0.2394  0.2394  
+
+SOURCE: scan_point_112.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  4.456745e+04  2.30e+03  1  1  
+V  K  1.994396e+03  1.44e+02  0.0279  0.0279  
+
+SOURCE: scan_point_26.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.022986e+04  1.66e+03  1  1  
+V  K  1.570877e+04  8.67e+02  0.324  0.324  
+
+SOURCE: scan_point_32.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  1.223117e+03  6.40e+01  1  1  
+V  K  2.989408e+00  1.93e+01  0.001524  0.001524  
+
+SOURCE: scan_point_24.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  2.894907e+04  2.14e+02  1  1  
+V  K  1.549918e+04  1.54e+02  0.3338  0.3338  
+
+SOURCE: scan_point_30.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  4.282729e+04  7.87e+02  1  1  
+V  K  2.026237e+04  3.81e+02  0.295  0.295  
+
+SOURCE: scan_point_18.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.918917e+04  3.21e+02  1  1  
+V  K  1.914587e+04  1.95e+02  0.3046  0.3046  
+
+SOURCE: scan_point_104.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.362186e+04  2.22e+02  1  1  
+V  K  1.385994e+04  1.46e+02  0.257  0.257  
+
+SOURCE: scan_point_110.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  2.280517e+01  3.93e+01  1  1  
+V  K  1.358184e+02  3.24e+01  3.714  3.714  
+
+SOURCE: scan_point_111.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.574152e+04  3.67e+02  1  1  
+V  K  1.888156e+03  9.06e+01  0.03294  0.03294  
+
+SOURCE: scan_point_105.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.713222e+04  9.33e+02  1  1  
+V  K  1.461503e+04  3.87e+02  0.2454  0.2454  
+
+SOURCE: scan_point_19.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.938779e+04  2.23e+02  1  1  
+V  K  1.905244e+04  1.64e+02  0.3016  0.3016  
+
+SOURCE: scan_point_31.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  4.437362e+04  2.36e+02  1  1  
+V  K  2.047172e+04  1.70e+02  0.2877  0.2877  
+
+SOURCE: scan_point_25.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  2.691956e+04  6.86e+02  1  1  
+V  K  1.425527e+04  3.76e+02  0.3302  0.3302  
+
+SOURCE: scan_point_81.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.759523e+04  9.08e+02  1  1  
+V  K  1.645426e+04  4.16e+02  0.2729  0.2729  
+
+SOURCE: scan_point_95.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.293390e+04  1.73e+03  1  1  
+V  K  1.344837e+04  7.14e+02  0.2546  0.2546  
+
+SOURCE: scan_point_42.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  4.377168e+04  6.63e+02  1  1  
+V  K  1.984114e+04  3.23e+02  0.2826  0.2826  
+
+SOURCE: scan_point_56.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.578796e+04  3.57e+02  1  1  
+V  K  1.707467e+04  2.03e+02  0.2975  0.2975  
+
+SOURCE: scan_point_57.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.517710e+04  1.80e+03  1  1  
+V  K  1.670132e+04  8.73e+02  0.296  0.296  
+
+SOURCE: scan_point_43.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  5.429607e+02  1.79e+02  1  1  
+V  K  2.230210e+02  8.24e+01  0.2561  0.2561  
+
+SOURCE: scan_point_94.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.581682e+04  1.08e+03  1  1  
+V  K  1.528626e+04  4.76e+02  0.2661  0.2661  
+
+SOURCE: scan_point_80.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.704625e+04  2.15e+02  1  1  
+V  K  1.638860e+04  1.53e+02  0.2758  0.2758  
+
+SOURCE: scan_point_96.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.338808e+04  2.09e+02  1  1  
+V  K  1.381738e+04  1.43e+02  0.258  0.258  
+
+SOURCE: scan_point_82.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.665699e+04  1.60e+03  1  1  
+V  K  1.630688e+04  7.22e+02  0.2774  0.2774  
+
+SOURCE: scan_point_69.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.570720e+04  7.92e+02  1  1  
+V  K  1.634948e+04  3.82e+02  0.2855  0.2855  
+
+SOURCE: scan_point_55.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  4.114375e+02  5.33e+02  1  1  
+V  K  3.769408e+02  5.67e+02  0.5713  0.5713  
+
+SOURCE: scan_point_41.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.991244e+04  2.94e+02  1  1  
+V  K  1.878225e+04  1.82e+02  0.2934  0.2934  
+
+SOURCE: scan_point_40.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  4.575706e+04  4.74e+02  1  1  
+V  K  2.043040e+04  2.49e+02  0.2784  0.2784  
+
+SOURCE: scan_point_54.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  5.233985e+02  6.79e+02  1  1  
+V  K  2.696180e+02  2.70e+02  0.3212  0.3212  
+
+SOURCE: scan_point_68.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.924106e+04  1.72e+03  1  1  
+V  K  1.775258e+04  7.91e+02  0.2821  0.2821  
+
+SOURCE: scan_point_83.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.706650e+04  4.41e+02  1  1  
+V  K  1.592891e+04  2.21e+02  0.268  0.268  
+
+SOURCE: scan_point_97.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  2.430436e+04  1.04e+03  1  1  
+V  K  1.035541e+04  4.47e+02  0.2657  0.2657  
+
+SOURCE: scan_point_93.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.810746e+04  1.82e+03  1  1  
+V  K  1.597671e+04  7.72e+02  0.2614  0.2614  
+
+SOURCE: scan_point_8.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  5.227369e+00  1.72e+02  1  1  
+V  K  3.069780e+00  1.37e+02  0.3662  0.3662  
+
+SOURCE: scan_point_87.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.713154e+01  4.43e+02  1  1  
+V  K  6.036736e+01  5.96e+02  1.014  1.014  
+
+SOURCE: scan_point_50.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.373343e+04  1.17e+03  1  1  
+V  K  1.615486e+04  5.82e+02  0.2986  0.2986  
+
+SOURCE: scan_point_44.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  2.808652e+02  7.27e+01  1  1  
+V  K  8.133038e+01  3.03e+01  0.1806  0.1806  
+
+SOURCE: scan_point_78.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.705860e+04  8.11e+02  1  1  
+V  K  1.652144e+04  3.75e+02  0.278  0.278  
+
+SOURCE: scan_point_79.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.701210e+04  3.36e+02  1  1  
+V  K  1.625672e+04  1.87e+02  0.2739  0.2739  
+
+SOURCE: scan_point_45.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.728111e+04  2.16e+02  1  1  
+V  K  1.762971e+04  1.56e+02  0.2949  0.2949  
+
+SOURCE: scan_point_51.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.221663e+04  4.11e+02  1  1  
+V  K  1.539817e+04  2.24e+02  0.298  0.298  
+
+SOURCE: scan_point_86.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  2.824875e+04  9.10e+02  1  1  
+V  K  1.258766e+04  4.18e+02  0.2778  0.2778  
+
+SOURCE: scan_point_9.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  1.173562e+01  7.21e+01  1  1  
+V  K  9.575550e-01  1.65e+01  0.05088  0.05088  
+
+SOURCE: scan_point_92.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.809325e+04  3.05e+02  1  1  
+V  K  1.617493e+04  1.77e+02  0.2648  0.2648  
+
+SOURCE: scan_point_84.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.545612e+04  4.16e+02  1  1  
+V  K  1.510369e+04  2.06e+02  0.2656  0.2656  
+
+SOURCE: scan_point_90.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.647186e+04  1.71e+03  1  1  
+V  K  1.566729e+04  7.46e+02  0.2679  0.2679  
+
+SOURCE: scan_point_47.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.359255e+04  4.66e+02  1  1  
+V  K  1.612846e+04  2.47e+02  0.2994  0.2994  
+
+SOURCE: scan_point_53.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.948125e+04  1.97e+03  1  1  
+V  K  1.762716e+04  8.87e+02  0.2784  0.2784  
+
+SOURCE: scan_point_52.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.208304e+04  2.42e+02  1  1  
+V  K  1.529292e+04  1.58e+02  0.2972  0.2972  
+
+SOURCE: scan_point_46.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.107628e+04  1.99e+02  1  1  
+V  K  1.546396e+04  1.47e+02  0.3103  0.3103  
+
+SOURCE: scan_point_91.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.735593e+04  7.52e+02  1  1  
+V  K  1.575974e+04  3.37e+02  0.2631  0.2631  
+
+SOURCE: scan_point_85.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  3.299615e+04  6.53e+02  1  1  
+V  K  1.393394e+04  2.96e+02  0.2633  0.2633  
+
