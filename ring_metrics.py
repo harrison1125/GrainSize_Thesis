@@ -21,7 +21,41 @@ Typical usage
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.signal import find_peaks, cwt
+from scipy.signal import find_peaks
+from scipy.optimize import curve_fit
+from scipy.stats import kurtosis, skew
+
+
+# ---------------------------------------------------------------------------
+# Wavelet primitives
+# ---------------------------------------------------------------------------
+
+def _cwt(signal: np.ndarray, wavelet_fn, scales: np.ndarray) -> np.ndarray:
+    """
+    Continuous wavelet transform via direct convolution.
+
+    Reimplements the removed scipy.signal.cwt using numpy convolve,
+    keeping the same interface: wavelet_fn(length, scale) -> array.
+
+    Parameters
+    ----------
+    signal : np.ndarray
+        1D input signal.
+    wavelet_fn : callable
+        Function of (points, scale) returning the wavelet at that scale.
+    scales : np.ndarray
+        Array of scales to evaluate.
+
+    Returns
+    -------
+    np.ndarray
+        CWT coefficients, shape (len(scales), len(signal)).
+    """
+    out = np.empty((len(scales), len(signal)), dtype=float)
+    for i, scale in enumerate(scales):
+        wav = wavelet_fn(min(10 * int(scale), len(signal)), scale)
+        out[i] = np.convolve(signal, wav[::-1], mode="same")
+    return out
 
 
 def ricker(points: int, a: float) -> np.ndarray:
@@ -47,7 +81,6 @@ def ricker(points: int, a: float) -> np.ndarray:
     mod = 1 - tsq / wsq
     gauss = np.exp(-tsq / (2 * wsq))
     return A * mod * gauss
-from scipy.stats import kurtosis, skew
 
 
 # ---------------------------------------------------------------------------
@@ -138,49 +171,28 @@ def _wavelet_peak_analysis(
         Angular spacing between bins in degrees.
     scales : np.ndarray, optional
         Wavelet scales to evaluate (in bins). Defaults to 1–30 bins
-        (1°–30° at 1°/bin resolution), covering single-grain spots up
+        (1 deg–30 deg at 1 deg/bin resolution), covering single-grain spots up
         to broad texture components.
 
     Returns
     -------
     dict with keys:
-        cwt_n_peaks         : int
-            Number of peaks detected in the scale-averaged CWT power profile.
-            More robust than simple find_peaks because it integrates evidence
-            across multiple scales before detecting.
-        cwt_peak_positions  : list of float
-            Gamma positions (degrees) of CWT-detected peaks.
+        cwt_n_peaks            : int
+        cwt_peak_positions     : list of float
         cwt_dominant_scale_deg : float
-            The wavelet scale (degrees) at which total CWT power is maximized,
-            i.e. the most prevalent angular width of intensity features.
-            Small values (~1–5°) indicate sharp spots (coarse grains);
-            large values (~10–30°) indicate broad texture lobes (fiber texture).
-        cwt_total_power     : float
-            Sum of squared CWT coefficients across all scales and positions,
-            normalized by signal length. Measures the total non-uniformity
-            energy in the ring — high values indicate strong localized features,
-            near zero indicates a flat uniform ring.
-        cwt_scale_entropy   : float
-            Shannon entropy of the scale-averaged power spectrum. Low entropy
-            means power is concentrated at one scale (peaks have a characteristic
-            width); high entropy means features exist at many scales simultaneously
-            (complex multi-scale texture or noise).
-        cwt_coefficients    : np.ndarray
-            Full 2D CWT coefficient array (n_scales x npt_azim), retained for
-            optional downstream visualization.
+        cwt_total_power        : float
+        cwt_scale_entropy      : float
+        cwt_coefficients       : np.ndarray
     """
     if scales is None:
         scales = np.arange(1, 31)  # 1–30 bins
 
     s = np.nan_to_num(signal, nan=float(np.nanmean(signal)))
 
-    # Compute CWT with Ricker (Mexican hat) wavelet
-    coeffs = cwt(s, ricker, scales)  # shape: (n_scales, npt_azim)
+    coeffs = _cwt(s, ricker, scales)  # shape: (n_scales, npt_azim)
 
-    # Scale-averaged power: mean squared coefficient per azimuthal position
     scale_avg_power = np.mean(coeffs ** 2, axis=0)  # shape: (npt_azim,)
 
-    # Detect peaks in scale-averaged power
     if scale_avg_power.max() > 0:
         prominence = scale_avg_power.std() * 0.5
         peaks_idx, _ = find_peaks(scale_avg_power, prominence=prominence, distance=5)
@@ -189,15 +201,12 @@ def _wavelet_peak_analysis(
 
     cwt_peak_positions = (peaks_idx * d_gamma - 180.0).tolist()
 
-    # Dominant scale: which scale has the most total power
     scale_power = np.sum(coeffs ** 2, axis=1)  # shape: (n_scales,)
     dominant_scale_idx = int(np.argmax(scale_power))
     dominant_scale_deg = float(scales[dominant_scale_idx] * d_gamma)
 
-    # Total normalized power
     cwt_total_power = float(np.sum(coeffs ** 2) / len(s))
 
-    # Scale entropy: how spread is the power across scales
     scale_power_norm = scale_power / scale_power.sum() if scale_power.sum() > 0 else scale_power
     scale_power_norm = scale_power_norm[scale_power_norm > 0]
     cwt_scale_entropy = float(-np.sum(scale_power_norm * np.log(scale_power_norm)))
@@ -210,6 +219,251 @@ def _wavelet_peak_analysis(
         "cwt_scale_entropy":      cwt_scale_entropy,
         "cwt_coefficients":       coeffs,
     }
+
+
+def _texture_index(signal: np.ndarray) -> float:
+    """
+    Compute the texture index F2 = mean((I / I_mean)^2).
+
+    F2 = 1.0 for a perfectly uniform powder ring. Values above 1 indicate
+    preferred orientation; the excess scales with texture sharpness. This is
+    the azimuthal analog of the standard pole figure texture index used in
+    quantitative ODF analysis (Bunge, 1982).
+
+    Parameters
+    ----------
+    signal : np.ndarray
+        1D intensity array sampled uniformly around the ring.
+
+    Returns
+    -------
+    float
+        Texture index. Returns nan if the mean is zero.
+    """
+    mean_val = np.nanmean(signal)
+    if mean_val <= 0:
+        return np.nan
+    return float(np.nanmean((signal / mean_val) ** 2))
+
+
+def _fit_peak_gaussians(
+    signal: np.ndarray,
+    azimuth: np.ndarray,
+    peaks_idx: np.ndarray,
+    window_bins: int = 20,
+) -> tuple[list[float], list[float]]:
+    """
+    Fit a Gaussian to each detected peak and return FWHM and asymmetry values.
+
+    A narrow FWHM (few degrees) indicates a sharp, well-defined texture
+    component from few coarse grains or strong alignment. A wide FWHM (tens
+    of degrees) indicates a broad fiber lobe or fine-grained material with
+    partial texture.
+
+    Asymmetry is computed from the data within ±FWHM of the fitted center as:
+        asymmetry = (I_right - I_left) / (I_right + I_left)
+    A nonzero asymmetry indicates an orientation gradient within the
+    diffracting volume, a signature of dislocation density gradients or
+    residual stress.
+
+    Parameters
+    ----------
+    signal : np.ndarray
+        1D mean intensity array sampled uniformly around the ring.
+    azimuth : np.ndarray
+        Azimuthal angle axis in degrees, shape (npt_azim,).
+    peaks_idx : np.ndarray
+        Indices of detected peaks in signal/azimuth.
+    window_bins : int, optional
+        Half-width (in bins) of the fitting window around each peak.
+
+    Returns
+    -------
+    fwhm_list : list of float
+        FWHM in degrees for each peak. nan if fit fails.
+    asymmetry_list : list of float
+        Asymmetry index for each peak. nan if fit fails.
+    """
+    def _gaussian(x, amp, mu, sigma):
+        return amp * np.exp(-0.5 * ((x - mu) / sigma) ** 2)
+
+    fwhm_list = []
+    asymmetry_list = []
+
+    for idx in peaks_idx:
+        lo = max(0, idx - window_bins)
+        hi = min(len(signal), idx + window_bins + 1)
+        x = azimuth[lo:hi]
+        y = signal[lo:hi]
+
+        try:
+            p0 = [signal[idx], azimuth[idx], 3.0]
+            popt, _ = curve_fit(_gaussian, x, y, p0=p0, maxfev=2000)
+            amp, mu, sigma = popt
+            if sigma <= 0 or abs(sigma) > 90:
+                raise ValueError("Unphysical sigma")
+
+            fwhm = abs(sigma) * 2 * np.sqrt(2 * np.log(2))
+            fwhm_list.append(fwhm)
+
+            # Asymmetry: integrated intensity left vs right of center within ±FWHM
+            half = fwhm / 2
+            left_mask  = (x >= mu - half) & (x < mu)
+            right_mask = (x >= mu) & (x <= mu + half)
+            i_left  = np.trapz(y[left_mask],  x[left_mask])  if left_mask.any()  else 0.0
+            i_right = np.trapz(y[right_mask], x[right_mask]) if right_mask.any() else 0.0
+            denom = i_left + i_right
+            asymmetry_list.append(
+                float((i_right - i_left) / denom) if denom > 0 else np.nan
+            )
+        except Exception:
+            fwhm_list.append(np.nan)
+            asymmetry_list.append(np.nan)
+
+    return fwhm_list, asymmetry_list
+
+
+def _fiber_symmetry_index(signal: np.ndarray, azimuth: np.ndarray) -> float:
+    """
+    Measure the deviation from fiber (inversion) symmetry: I(gamma) = I(-gamma).
+
+    For a sample with axial symmetry (fiber texture, rolled sheet, most
+    combinatorial libraries), the ring should be symmetric about gamma = 0.
+    The residual after enforcing symmetry is:
+
+        FSI = sum(|I(gamma) - I(-gamma)|) / sum(I(gamma))
+
+    FSI ~ 0 indicates clean fiber symmetry. High FSI flags sample tilt,
+    detector misalignment, a gradient in illuminated volume across the ring,
+    or genuinely broken symmetry such as a shear texture component.
+
+    Parameters
+    ----------
+    signal : np.ndarray
+        1D intensity array sampled uniformly around the ring.
+    azimuth : np.ndarray
+        Azimuthal angle axis in degrees. Assumed to span ~ (-180, 180).
+
+    Returns
+    -------
+    float
+        Fiber symmetry index in [0, 2]. Returns nan if interpolation fails.
+    """
+    try:
+        i_neg = np.interp(-azimuth, azimuth, signal)
+        total = np.nansum(signal)
+        if total == 0:
+            return np.nan
+        return float(np.nansum(np.abs(signal - i_neg)) / total)
+    except Exception:
+        return np.nan
+
+
+def _fourier_coefficients(signal: np.ndarray) -> tuple[float, float, float]:
+    """
+    Compute the normalized even-order Fourier coefficients C2, C4, C6 of the
+    azimuthal intensity profile.
+
+    The even harmonics of the azimuthal distribution correspond directly to
+    the C_l coefficients used in spherical harmonic ODF analysis (Bunge, 1982).
+    C2 captures the dominant two-fold symmetry present in most deformation
+    textures. The ratio C4/C2 distinguishes texture types — for example,
+    copper-type vs. brass-type textures in FCC metals — with direct implications
+    for predicted r-value anisotropy and yield locus shape. C6 is sensitive
+    to higher-order texture components and is often near zero for weak textures.
+
+    Coefficients are normalized by the DC component (C0) so they are
+    dimensionless and independent of absolute intensity.
+
+    Parameters
+    ----------
+    signal : np.ndarray
+        1D intensity array sampled uniformly around the ring, shape (npt_azim,).
+
+    Returns
+    -------
+    c2 : float
+    c4 : float
+    c6 : float
+        Normalized Fourier amplitudes at orders 2, 4, 6.
+    """
+    s = np.nan_to_num(signal, nan=float(np.nanmean(signal)))
+    fft = np.fft.rfft(s)
+    amps = np.abs(fft) / len(s)
+    c0 = amps[0]
+    if c0 == 0:
+        return np.nan, np.nan, np.nan
+    # Factor of 2 for one-sided spectrum (all orders except DC)
+    c2 = float(2 * amps[2] / c0) if len(amps) > 2 else np.nan
+    c4 = float(2 * amps[4] / c0) if len(amps) > 4 else np.nan
+    c6 = float(2 * amps[6] / c0) if len(amps) > 6 else np.nan
+    return c2, c4, c6
+
+
+def _arc_imbalance(signal: np.ndarray, azimuth: np.ndarray) -> float:
+    """
+    Compute the fractional intensity imbalance between opposing azimuthal hemispheres.
+
+    For a reflection where both the upper (gamma > 0) and lower (gamma < 0)
+    hemispheres should contribute equally, any persistent imbalance indicates:
+    sample tilt, asymmetric beam footprint, detector shadowing, or shear
+    texture components that break inversion symmetry.
+
+        arc_imbalance = (I_upper - I_lower) / (I_upper + I_lower)
+
+    Parameters
+    ----------
+    signal : np.ndarray
+        1D intensity array sampled uniformly around the ring.
+    azimuth : np.ndarray
+        Azimuthal angle axis in degrees. Assumed to span ~ (-180, 180).
+
+    Returns
+    -------
+    float
+        Arc imbalance in [-1, 1]. 0 = perfectly balanced hemispheres.
+    """
+    upper_mask = azimuth >= 0
+    lower_mask = azimuth < 0
+    i_upper = np.nansum(signal[upper_mask])
+    i_lower = np.nansum(signal[lower_mask])
+    denom = i_upper + i_lower
+    if denom == 0:
+        return np.nan
+    return float((i_upper - i_lower) / denom)
+
+
+def _warren_grain_estimate(signal: np.ndarray) -> float:
+    """
+    Estimate a relative grain count proxy using the Warren variance method.
+
+    When N independent grains contribute to an azimuthal bin, Poisson
+    counting statistics give Var(I) / Mean(I)^2 ~ 1/N. This assumes each
+    grain's diffracted intensity is an independent random variable with the
+    same mean, which holds when grain orientations are random (powder limit).
+    The estimate is therefore most physically meaningful for near-random rings;
+    for strongly textured samples it provides a lower bound on the number of
+    contributing crystallites.
+
+    The returned value is dimensionless and inversely proportional to the
+    estimated grain count. Smaller values indicate more grains (fine-grained);
+    larger values indicate fewer, coarser grains dominating the ring.
+
+    Parameters
+    ----------
+    signal : np.ndarray
+        1D intensity array sampled uniformly around the ring.
+
+    Returns
+    -------
+    float
+        Variance / Mean^2. Returns nan if mean is zero.
+    """
+    s = np.nan_to_num(signal, nan=float(np.nanmean(signal)))
+    mean_val = float(np.nanmean(s))
+    if mean_val <= 0:
+        return np.nan
+    return float(np.nanvar(s) / mean_val ** 2)
 
 
 # ---------------------------------------------------------------------------
@@ -264,6 +518,44 @@ def compute_ring_statistics(
             Fraction of azimuthal bins above noise threshold (0-1).
         integrated            : float
             Sum of mean_i * d_gamma. Phase volume fraction proxy.
+
+        texture_index         : float
+            F2 = mean((I/I_mean)^2). 1.0 for random powder, >1 for texture.
+            Dimensionless analog of the standard pole figure texture index
+            (Bunge, 1982).
+        peak_fwhm_mean_deg    : float
+            Mean Gaussian FWHM of detected peaks in degrees. nan if no peaks.
+            Small values indicate sharp texture spots (coarse grains or strong
+            alignment); large values indicate broad fiber lobes.
+        peak_fwhm_std_deg     : float
+            Standard deviation of peak FWHMs in degrees. nan if <2 peaks.
+        peak_asymmetry_mean   : float
+            Mean asymmetry index across all detected peaks. Nonzero values
+            indicate an orientation gradient within the diffracting volume,
+            a signature of dislocation density gradients or residual stress.
+            nan if no peaks.
+        fiber_symmetry_index  : float
+            Fractional residual after enforcing I(gamma) = I(-gamma). Near 0
+            for clean fiber symmetry; elevated values flag tilt, detector
+            shadowing, or shear texture components.
+        fourier_c2            : float
+            Normalized 2nd-order Fourier amplitude. Captures the dominant
+            two-fold symmetry of most deformation textures.
+        fourier_c4            : float
+            Normalized 4th-order Fourier amplitude. The C4/C2 ratio
+            distinguishes texture types (e.g. copper vs. brass in FCC metals)
+            with direct implications for r-value anisotropy.
+        fourier_c6            : float
+            Normalized 6th-order Fourier amplitude. Sensitive to higher-order
+            texture components; near zero for weak textures.
+        arc_imbalance         : float
+            (I_upper - I_lower) / (I_upper + I_lower). Hemisphere intensity
+            imbalance; flags tilt, detector shadowing, or shear texture.
+        warren_grain_proxy    : float
+            Var(I) / Mean(I)^2. Inversely proportional to the number of
+            contributing grains per illuminated volume. Small = fine-grained;
+            large = coarse-grained.
+
         cwt_n_peaks           : int
             Number of peaks in scale-averaged CWT power. More robust than
             n_texture_peaks because it integrates across scales.
@@ -303,9 +595,25 @@ def compute_ring_statistics(
     completeness = float(np.sum(mean_i > noise_threshold) / len(mean_i))
     integrated   = float(np.nansum(mean_i) * d_gamma)
 
+    # --- New metrics ---
+    tex_index = _texture_index(mean_i)
+
+    fwhm_list, asymmetry_list = _fit_peak_gaussians(mean_i, azimuth, peaks_idx)
+    valid_fwhm = [v for v in fwhm_list if np.isfinite(v)]
+    peak_fwhm_mean_deg  = float(np.mean(valid_fwhm))  if valid_fwhm             else np.nan
+    peak_fwhm_std_deg   = float(np.std(valid_fwhm))   if len(valid_fwhm) > 1    else np.nan
+    valid_asym          = [v for v in asymmetry_list if np.isfinite(v)]
+    peak_asymmetry_mean = float(np.mean(valid_asym))  if valid_asym             else np.nan
+
+    fsi          = _fiber_symmetry_index(mean_i, azimuth)
+    c2, c4, c6   = _fourier_coefficients(mean_i)
+    arc_imbal    = _arc_imbalance(mean_i, azimuth)
+    warren_proxy = _warren_grain_estimate(mean_i)
+
     wavelet = _wavelet_peak_analysis(mean_i, d_gamma)
 
     return {
+        # Original metrics
         "mean":                   mean_val,
         "std":                    std_val,
         "cv":                     cv,
@@ -318,6 +626,18 @@ def compute_ring_statistics(
         "peak_positions":         peak_positions,
         "completeness":           completeness,
         "integrated":             integrated,
+        # New metrics
+        "texture_index":          tex_index,
+        "peak_fwhm_mean_deg":     peak_fwhm_mean_deg,
+        "peak_fwhm_std_deg":      peak_fwhm_std_deg,
+        "peak_asymmetry_mean":    peak_asymmetry_mean,
+        "fiber_symmetry_index":   fsi,
+        "fourier_c2":             c2,
+        "fourier_c4":             c4,
+        "fourier_c6":             c6,
+        "arc_imbalance":          arc_imbal,
+        "warren_grain_proxy":     warren_proxy,
+        # CWT metrics
         "cwt_n_peaks":            wavelet["cwt_n_peaks"],
         "cwt_peak_positions":     wavelet["cwt_peak_positions"],
         "cwt_dominant_scale_deg": wavelet["cwt_dominant_scale_deg"],
@@ -328,121 +648,195 @@ def compute_ring_statistics(
 
 
 def plot_ring_metrics(
-    mean_i: np.ndarray,
-    std_i: np.ndarray,
-    azimuth: np.ndarray,
-    metrics: dict,
+    rings: list[dict],
     base_name: str,
     output_png: str,
-    tth_range: tuple = None,
 ) -> None:
     """
-    Plot the azimuthal intensity profile with annotated ring metrics,
-    including a CWT scalogram panel.
+    Plot ring metrics for one or more azimuthal ROIs as side-by-side columns.
+
+    Layout: 3 rows x n_rings columns.
+
+      Row 0 — Intensity vs gamma with find_peaks (red) and CWT (orange) peak
+               markers, plus a full metrics annotation box. One column per ring.
+      Row 1 — CWT scalogram (scale vs gamma). One column per ring.
+      Row 2 — Normalized Fourier amplitude spectrum (orders 0-12) with C2, C4,
+               C6 annotated. One column per ring.
+
+    When called with a single-element list the figure is identical to the
+    previous single-ring layout (one column).
 
     Parameters
     ----------
-    mean_i : np.ndarray
-        Mean intensity per azimuthal bin.
-    std_i : np.ndarray
-        Standard deviation per azimuthal bin.
-    azimuth : np.ndarray
-        Azimuthal angle axis in degrees.
-    metrics : dict
-        Output of compute_ring_statistics().
+    rings : list of dict
+        Each dict must contain:
+            mean_i    : np.ndarray  — mean intensity per azimuthal bin.
+            std_i     : np.ndarray  — std intensity per azimuthal bin.
+            azimuth   : np.ndarray  — azimuthal angle axis in degrees.
+            metrics   : dict        — output of compute_ring_statistics().
+            tth_range : tuple       — (tth_lo, tth_hi) shown in column titles.
     base_name : str
-        Sample name used in the plot title.
+        Sample name used in the figure suptitle.
     output_png : str
         Full path for the saved figure.
-    tth_range : tuple of float, optional
-        If provided, shown in the plot title for context.
     """
-    d_gamma = float(np.median(np.diff(azimuth)))
-    n_scales = metrics["cwt_coefficients"].shape[0]
-    scale_axis = np.arange(1, n_scales + 1) * d_gamma  # degrees
+    def _fmt(v, digits=3):
+        return f"{v:.{digits}f}" if np.isfinite(v) else "nan"
 
-    fig, axes = plt.subplots(2, 1, figsize=(10, 8), sharex=True,
-                             gridspec_kw={"height_ratios": [2, 1]})
+    n_rings   = len(rings)
+    fig_width = max(11, 7 * n_rings)
 
-    # Panel 1: intensity profile with peak markers
-    axes[0].plot(azimuth, mean_i, lw=2, color="steelblue", label="Mean over ROI")
-    axes[0].fill_between(
-        azimuth,
-        mean_i - std_i,
-        mean_i + std_i,
-        alpha=0.3, color="steelblue", label="±1 std",
+    fig, axes = plt.subplots(
+        3, n_rings,
+        figsize=(fig_width, 13),
+        gridspec_kw={"height_ratios": [3, 2, 2]},
+        squeeze=False,   # always 2-D axes array even for n_rings == 1
     )
 
-    # find_peaks markers (red)
-    if metrics["n_texture_peaks"] > 0:
-        peak_intensities = mean_i[
-            np.round(np.interp(
-                metrics["peak_positions"], azimuth, np.arange(len(azimuth))
-            )).astype(int)
-        ]
-        axes[0].scatter(
-            metrics["peak_positions"], peak_intensities,
-            color="red", zorder=5, s=50,
-            label=f"find_peaks (n={metrics['n_texture_peaks']})",
+    for ci, ring in enumerate(rings):
+        mean_i    = ring["mean_i"]
+        std_i     = ring["std_i"]
+        azimuth   = ring["azimuth"]
+        metrics   = ring["metrics"]
+        tth_range = ring.get("tth_range", None)
+
+        d_gamma  = float(np.median(np.diff(azimuth)))
+        n_scales = metrics["cwt_coefficients"].shape[0]
+        scale_axis = np.arange(1, n_scales + 1) * d_gamma
+
+        col_title = (
+            f"ROI: {tth_range[0]}–{tth_range[1]}°"
+            if tth_range is not None else f"Ring {ci}"
         )
-        for pos, intensity in zip(metrics["peak_positions"], peak_intensities):
-            axes[0].annotate(
-                f"{pos:.1f}°", xy=(pos, intensity),
-                xytext=(0, 8), textcoords="offset points",
-                ha="center", fontsize=8, color="red",
+
+        # ------------------------------------------------------------------
+        # Row 0: intensity profile with peak markers
+        # ------------------------------------------------------------------
+        ax0 = axes[0, ci]
+        ax0.plot(azimuth, mean_i, lw=2, color="steelblue", label="Mean over ROI")
+        ax0.fill_between(
+            azimuth, mean_i - std_i, mean_i + std_i,
+            alpha=0.3, color="steelblue", label="±1 std",
+        )
+
+        if metrics["n_texture_peaks"] > 0:
+            peak_intensities = mean_i[
+                np.round(np.interp(
+                    metrics["peak_positions"], azimuth, np.arange(len(azimuth))
+                )).astype(int)
+            ]
+            ax0.scatter(
+                metrics["peak_positions"], peak_intensities,
+                color="red", zorder=5, s=50,
+                label=f"find_peaks (n={metrics['n_texture_peaks']})",
+            )
+            for pos, intensity in zip(metrics["peak_positions"], peak_intensities):
+                ax0.annotate(
+                    f"{pos:.1f}°", xy=(pos, intensity),
+                    xytext=(0, 8), textcoords="offset points",
+                    ha="center", fontsize=8, color="red",
+                )
+
+        if metrics["cwt_n_peaks"] > 0:
+            cwt_intensities = mean_i[
+                np.round(np.interp(
+                    metrics["cwt_peak_positions"], azimuth, np.arange(len(azimuth))
+                )).astype(int)
+            ]
+            ax0.scatter(
+                metrics["cwt_peak_positions"], cwt_intensities,
+                color="orange", zorder=5, s=50, marker="^",
+                label=f"CWT peaks (n={metrics['cwt_n_peaks']})",
             )
 
-    # CWT peak markers (orange)
-    if metrics["cwt_n_peaks"] > 0:
-        cwt_intensities = mean_i[
-            np.round(np.interp(
-                metrics["cwt_peak_positions"], azimuth, np.arange(len(azimuth))
-            )).astype(int)
-        ]
-        axes[0].scatter(
-            metrics["cwt_peak_positions"], cwt_intensities,
-            color="orange", zorder=5, s=50, marker="^",
-            label=f"CWT peaks (n={metrics['cwt_n_peaks']})",
+        metrics_str = (
+            f"CV={_fmt(metrics['cv'])}  P/V={_fmt(metrics['peak_valley'], 2)}  "
+            f"TI={_fmt(metrics['texture_index'], 3)}\n"
+            f"Kurt={_fmt(metrics['kurtosis'], 2)}  Skew={_fmt(metrics['skewness'], 2)}  "
+            f"Warren={_fmt(metrics['warren_grain_proxy'], 4)}\n"
+            f"Entropy={_fmt(metrics['entropy'])}  ACF={_fmt(metrics['acf_length_deg'], 1)}°  "
+            f"FSI={_fmt(metrics['fiber_symmetry_index'], 3)}\n"
+            f"C2={_fmt(metrics['fourier_c2'], 3)}  C4={_fmt(metrics['fourier_c4'], 3)}  "
+            f"C6={_fmt(metrics['fourier_c6'], 3)}  ArcImbal={_fmt(metrics['arc_imbalance'], 3)}\n"
+            f"FWHM={_fmt(metrics['peak_fwhm_mean_deg'], 1)}°"
+            f"±{_fmt(metrics['peak_fwhm_std_deg'], 1)}°  "
+            f"PkAsym={_fmt(metrics['peak_asymmetry_mean'], 3)}\n"
+            f"CWT power={_fmt(metrics['cwt_total_power'], 2)}  "
+            f"dom.scale={_fmt(metrics['cwt_dominant_scale_deg'], 1)}°  "
+            f"scale_ent={_fmt(metrics['cwt_scale_entropy'], 2)}"
         )
+        ax0.text(
+            0.02, 0.97, metrics_str, transform=ax0.transAxes,
+            fontsize=7.5, verticalalignment="top", family="monospace",
+            bbox=dict(boxstyle="round,pad=0.4", facecolor="white", alpha=0.78),
+        )
+        ax0.set_title(col_title, fontsize=12, fontweight="bold")
+        ax0.set_xlabel(r"$\gamma$ (deg)", fontsize=11)
+        ax0.set_yscale("log")
+        ax0.legend(fontsize=8)
+        ax0.tick_params(axis="both", which="major", labelsize=10)
+        if ci == 0:
+            ax0.set_ylabel("Intensity", fontsize=12)
 
-    metrics_str = (
-        f"CV={metrics['cv']:.3f}  P/V={metrics['peak_valley']:.2f}\n"
-        f"Kurt={metrics['kurtosis']:.2f}  Skew={metrics['skewness']:.2f}\n"
-        f"Entropy={metrics['entropy']:.3f}  ACF={metrics['acf_length_deg']:.1f}°\n"
-        f"CWT power={metrics['cwt_total_power']:.2f}  "
-        f"dom.scale={metrics['cwt_dominant_scale_deg']:.1f}°  "
-        f"scale_ent={metrics['cwt_scale_entropy']:.2f}"
-    )
-    axes[0].text(
-        0.02, 0.97, metrics_str, transform=axes[0].transAxes,
-        fontsize=8, verticalalignment="top",
-        bbox=dict(boxstyle="round,pad=0.4", facecolor="white", alpha=0.7),
-    )
-    axes[0].set_ylabel("Intensity", fontsize=13)
-    axes[0].set_yscale("log")
-    axes[0].legend(fontsize=9)
-    axes[0].tick_params(axis="both", which="major", labelsize=11)
+        # ------------------------------------------------------------------
+        # Row 1: CWT scalogram
+        # ------------------------------------------------------------------
+        ax1 = axes[1, ci]
+        coeffs = metrics["cwt_coefficients"]
+        ax1.imshow(
+            np.abs(coeffs),
+            aspect="auto",
+            origin="lower",
+            extent=[azimuth.min(), azimuth.max(), scale_axis.min(), scale_axis.max()],
+            cmap="hot",
+        )
+        ax1.set_xlabel(r"$\gamma$ (deg)", fontsize=11)
+        ax1.set_title(
+            f"CWT Scalogram — dom. scale: {metrics['cwt_dominant_scale_deg']:.1f}°",
+            fontsize=10,
+        )
+        ax1.tick_params(axis="both", which="major", labelsize=10)
+        if ci == 0:
+            ax1.set_ylabel("Scale (deg)", fontsize=11)
 
-    title = f"{base_name} — Ring Metrics"
-    if tth_range is not None:
-        title += f"  |  ROI: {tth_range[0]}–{tth_range[1]} deg"
-    axes[0].set_title(title, fontsize=13)
+        # ------------------------------------------------------------------
+        # Row 2: Fourier spectrum
+        # ------------------------------------------------------------------
+        ax2 = axes[2, ci]
+        s = np.nan_to_num(mean_i, nan=float(np.nanmean(mean_i)))
+        fft_amps = np.abs(np.fft.rfft(s)) / len(s)
+        c0_amp   = fft_amps[0]
+        orders   = np.arange(len(fft_amps))
+        norm_amps = (
+            np.where(orders == 0, fft_amps / c0_amp, 2 * fft_amps / c0_amp)
+            if c0_amp > 0 else fft_amps
+        )
+        max_order = min(13, len(orders))
+        ax2.bar(
+            orders[:max_order], norm_amps[:max_order],
+            color="steelblue", alpha=0.75, width=0.6,
+        )
+        for order, key in [(2, "fourier_c2"), (4, "fourier_c4"), (6, "fourier_c6")]:
+            if order < max_order and np.isfinite(metrics[key]):
+                ax2.annotate(
+                    f"C{order}={metrics[key]:.3f}",
+                    xy=(order, norm_amps[order]),
+                    xytext=(0, 5), textcoords="offset points",
+                    ha="center", fontsize=8, color="darkred",
+                )
+        ax2.set_xlabel("Fourier Order", fontsize=11)
+        ax2.set_title(
+            "Fourier Spectrum  (C2=two-fold, C4=four-fold, C6=six-fold)",
+            fontsize=9,
+        )
+        ax2.set_xticks(orders[:max_order])
+        ax2.tick_params(axis="both", which="major", labelsize=10)
+        ax2.grid(axis="y", lw=0.5, alpha=0.4)
+        if ci == 0:
+            ax2.set_ylabel("Normalized Amplitude", fontsize=11)
 
-    # Panel 2: CWT scalogram
-    coeffs = metrics["cwt_coefficients"]
-    axes[1].imshow(
-        np.abs(coeffs),
-        aspect="auto",
-        origin="lower",
-        extent=[azimuth.min(), azimuth.max(), scale_axis.min(), scale_axis.max()],
-        cmap="hot",
-    )
-    axes[1].set_xlabel(r"$\gamma$ (deg)", fontsize=13)
-    axes[1].set_ylabel("Scale (deg)", fontsize=11)
-    axes[1].set_title("CWT Scalogram (Mexican hat)", fontsize=11)
-    axes[1].tick_params(axis="both", which="major", labelsize=11)
-
+    fig.suptitle(f"{base_name} — Ring Metrics", fontsize=14, y=1.01)
     plt.tight_layout()
-    plt.savefig(output_png, dpi=150)
+    plt.savefig(output_png, dpi=150, bbox_inches="tight")
     plt.close()
     print(f"Saved: {output_png}")

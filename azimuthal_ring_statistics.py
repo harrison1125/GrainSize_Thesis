@@ -57,7 +57,7 @@ def _write_subfolder_csv(csv_path: str, rows: list[dict], scalar_keys: list[str]
 def azimuthal_ring_statistics(
     input_directory: str,
     poni_file: str,
-    tth_range: tuple = (14.0, 16.0),
+    tth_range: tuple = (15.5, 17),
     npt_rad: int = 200,
     npt_azim: int = 360,
 ) -> dict:
@@ -89,8 +89,17 @@ def azimuthal_ring_statistics(
         per-bin arrays, scalar metrics, and 'scan_point' (int).
     """
     scalar_keys = [
+        # Original metrics
         "mean", "std", "cv", "peak_valley", "skewness", "kurtosis",
         "entropy", "acf_length_deg", "n_texture_peaks", "completeness", "integrated",
+        # New metrics
+        "texture_index",
+        "peak_fwhm_mean_deg", "peak_fwhm_std_deg", "peak_asymmetry_mean",
+        "fiber_symmetry_index",
+        "fourier_c2", "fourier_c4", "fourier_c6",
+        "arc_imbalance",
+        "warren_grain_proxy",
+        # CWT metrics
         "cwt_n_peaks", "cwt_dominant_scale_deg", "cwt_total_power", "cwt_scale_entropy",
     ]
 
@@ -157,8 +166,8 @@ def azimuthal_ring_statistics(
 
                 # --- Plot ---
                 fig, axes = plt.subplots(
-                    3, 1, figsize=(9, 13),
-                    gridspec_kw={"height_ratios": [3, 1, 3]},
+                    4, 1, figsize=(9, 17),
+                    gridspec_kw={"height_ratios": [3, 1, 3, 2]},
                 )
 
                 # Panel 1: Caked image (log scale)
@@ -246,6 +255,27 @@ def azimuthal_ring_statistics(
                 )
                 axes[2].set_yscale("log")
                 axes[2].legend(fontsize=10)
+
+                # Panel 4: CWT scalogram
+                coeffs = metrics["cwt_coefficients"]  # (n_scales, npt_azim)
+                n_scales = coeffs.shape[0]
+                d_gamma = float(np.median(np.diff(azimuth)))
+                scale_axis_min = 1 * d_gamma
+                scale_axis_max = n_scales * d_gamma
+                axes[3].imshow(
+                    np.abs(coeffs),
+                    aspect="auto",
+                    origin="lower",
+                    extent=[azimuth.min(), azimuth.max(), scale_axis_min, scale_axis_max],
+                    cmap="hot",
+                )
+                axes[3].set_xlabel(r"$\gamma$ (deg)", fontsize=13)
+                axes[3].set_ylabel("Scale (deg)", fontsize=13)
+                axes[3].set_title(
+                    f"CWT Scalogram (Mexican hat)  —  dominant scale: "
+                    f"{metrics['cwt_dominant_scale_deg']:.1f}°",
+                    fontsize=11,
+                )
 
                 for ax in axes:
                     ax.tick_params(axis="both", which="major", labelsize=12)
