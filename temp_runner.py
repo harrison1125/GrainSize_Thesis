@@ -1,6 +1,6 @@
 """
-plot_combined_directories.py  —  TEMPORARY SCRIPT
---------------------------------------------------
+temp_runner.py  —  TEMPORARY SCRIPT
+------------------------------------
 Reads ring_metrics_summary.csv from each listed subdirectory, filters to
 scan points 4–30, and produces a single composite figure with one subplot
 per metric.
@@ -12,7 +12,7 @@ flipped before stacking; the y-axis is position in mm, matching the
 reference plot exactly.
 
 Run independently after azimuthal_ring_statistics.py:
-    python plot_combined_directories.py
+    python temp_runner.py
 """
 
 import os
@@ -21,6 +21,7 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+import Inputs
 
 # ---------------------------------------------------------------------------
 # Config
@@ -57,12 +58,12 @@ DIRECTORIES = [
 # Indices to flip (matching reference plot logic: if i in [0, 1, 2, 5])
 FLIP_INDICES = {0}
 
-# Ring indices to plot and their display labels.
-# Index corresponds to the order of tth_ranges passed to
-# azimuthal_ring_statistics(). Add or remove entries to match your run.
+# Ring indices and display labels are derived automatically from Inputs.tth_ranges
+# so this list stays in sync without manual editing. Override here if you want
+# custom labels or a subset of rings.
 RINGS = [
-    (0, "Ring 0"),
-    (1, "Ring 1"),
+    (i, f"Ring {i}  ({lo}–{hi}°)")
+    for i, (lo, hi) in enumerate(Inputs.tth_ranges)
 ]
 
 METRIC_CONFIG = [
@@ -291,7 +292,7 @@ def plot_composite(
     plt.tight_layout()
     plt.savefig(output_png, dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"\nSaved: {OUTPUT_PNG}")
+    print(f"\nSaved: {output_png}")
 
 
 # ---------------------------------------------------------------------------
