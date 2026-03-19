@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from pyFAI.integrator.azimuthal import AzimuthalIntegrator
-from ring_metrics import compute_ring_statistics
+from ring_metrics import compute_ring_statistics, plot_ring_metrics
 import Inputs
 
 
@@ -31,9 +31,17 @@ def _extract_scan_point(base_name: str) -> int:
     return int(match.group(1)) if match else -1
 
 
-def _write_subfolder_csv(csv_path: str, rows: list[dict], scalar_keys: list[str]) -> None:
+def _write_subfolder_csv(
+    csv_path: str,
+    rows: list[dict],
+    n_rings: int,
+    scalar_keys: list[str],
+) -> None:
     """
     Write a ring metrics summary CSV for a single subfolder.
+
+    Column names are prefixed with ring{i}_ for each ring index i so that
+    metricplot.py and temp_runner.py can unambiguously address any ring.
 
     Parameters
     ----------
@@ -41,33 +49,50 @@ def _write_subfolder_csv(csv_path: str, rows: list[dict], scalar_keys: list[str]
         Full output path for the CSV file.
     rows : list of dict
         One dict per scan point, already sorted by scan_point.
+        Each dict must contain 'sample', 'scan_point', and for every ring
+        index i a nested dict at key i with all scalar_keys.
+    n_rings : int
+        Number of rings (determines column prefix count).
     scalar_keys : list of str
         Metric column names to include (excluding sample and scan_point).
     """
+    ring_cols = [
+        f"ring{i}_{key}" for i in range(n_rings) for key in scalar_keys
+    ]
+    fieldnames = ["sample", "scan_point"] + ring_cols
+
     with open(csv_path, "w", newline="") as csvfile:
-        writer = csv.DictWriter(
-            csvfile, fieldnames=["sample", "scan_point"] + scalar_keys
-        )
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for row in rows:
-            writer.writerow(row)
+            flat = {"sample": row["sample"], "scan_point": row["scan_point"]}
+            for i in range(n_rings):
+                ring_metrics = row.get(i, {})
+                for key in scalar_keys:
+                    flat[f"ring{i}_{key}"] = ring_metrics.get(key, "")
+            writer.writerow(flat)
     print(f"Saved summary: {csv_path}")
 
 
 def azimuthal_ring_statistics(
     input_directory: str,
     poni_file: str,
-    tth_range: tuple = (15.5, 17),
+    tth_ranges: list[tuple] = ((15.5, 17),),
     npt_rad: int = 200,
     npt_azim: int = 360,
 ) -> dict:
     """
     Analyze intensity along azimuthal rings for all TIFF images in a directory tree.
 
-    Walks input_directory recursively. For each subfolder containing TIFFs, cakes
-    each image, computes per-azimuthal-bin statistics and ring metrics, saves
-    per-image .dat and .png files, and writes one ring_metrics_summary.csv per
-    subfolder sorted by scan point (trailing integer in filename).
+    Walks input_directory recursively. For each subfolder containing TIFFs:
+      - Runs integrate2d once per image (expensive cake operation).
+      - For each entry in tth_ranges, slices the cached 2D result to that ROI
+        and computes per-bin statistics and ring metrics.
+      - Saves one .dat file per image per ring and one multi-column .png per
+        image (n_rings columns, 5 rows: caked image, ROI heatmap, intensity
+        profile, CWT scalogram, Fourier spectrum).
+      - Writes one ring_metrics_summary.csv per subfolder with ring{i}_-prefixed
+        columns, sorted by scan point (trailing integer in filename).
 
     Parameters
     ----------
@@ -75,8 +100,9 @@ def azimuthal_ring_statistics(
         Root directory containing subfolders of TIFF images.
     poni_file : str
         Path to the pyFAI calibration (.poni) file.
-    tth_range : tuple of float, optional
-        2theta range (degrees) defining the ring ROI.
+    tth_ranges : list of tuple of float, optional
+        Each entry is a (tth_lo, tth_hi) pair in degrees defining one ring ROI.
+        Defaults to [(15.5, 17)] (single ring, backward-compatible).
     npt_rad : int, optional
         Number of radial bins for integrate2d.
     npt_azim : int, optional
@@ -86,13 +112,14 @@ def azimuthal_ring_statistics(
     -------
     dict
         Two-level nested dict: results[subfolder][base_name] contains
-        per-bin arrays, scalar metrics, and 'scan_point' (int).
+        'scan_point' (int), shared 'tth' and 'azimuth' axes, 'intensity_2d',
+        and per-ring data under key 'rings' (list of dicts, one per tth_range).
     """
     scalar_keys = [
         # Original metrics
         "mean", "std", "cv", "peak_valley", "skewness", "kurtosis",
         "entropy", "acf_length_deg", "n_texture_peaks", "completeness", "integrated",
-        # New metrics
+        # Texture / ODF metrics
         "texture_index",
         "peak_fwhm_mean_deg", "peak_fwhm_std_deg", "peak_asymmetry_mean",
         "fiber_symmetry_index",
@@ -102,6 +129,8 @@ def azimuthal_ring_statistics(
         # CWT metrics
         "cwt_n_peaks", "cwt_dominant_scale_deg", "cwt_total_power", "cwt_scale_entropy",
     ]
+
+    n_rings = len(tth_ranges)
 
     ai = AzimuthalIntegrator()
     ai.load(poni_file)
@@ -130,13 +159,13 @@ def azimuthal_ring_statistics(
 
         for scan_point, filename, base_name in file_list:
             input_path = os.path.join(dirpath, filename)
-            output_dat = os.path.join(dirpath, f"{base_name}_ring_stats.dat")
             output_png = os.path.join(dirpath, f"{base_name}_ring_stats.png")
 
             try:
                 image = fabio.open(input_path).data
 
-                # integrate2d returns I[azimuth, radial], tth, azimuth
+                # --- integrate2d: run once, reuse for all rings ---
+                # Returns I[azimuth, radial], tth, azimuth
                 intensity_2d, tth, azimuth = ai.integrate2d(
                     image,
                     npt_rad=npt_rad,
@@ -145,163 +174,68 @@ def azimuthal_ring_statistics(
                     unit="2th_deg",
                 )
 
-                # Restrict radial axis to 2theta ROI
-                tth_mask = (tth >= tth_range[0]) & (tth <= tth_range[1])
-                tth_roi  = tth[tth_mask]
-                intensity_roi = intensity_2d[:, tth_mask]  # (npt_azim, n_roi_bins)
+                # --- Per-ring processing ---
+                rings_data = []      # accumulates plot_ring_metrics input dicts
+                csv_ring_metrics = {}  # {ring_idx: {scalar_key: value}}
 
-                # Per-azimuthal-bin statistics collapsed over the radial ROI
-                mean_i = np.nanmean(intensity_roi, axis=1)  # shape: (npt_azim,)
-                std_i  = np.nanstd(intensity_roi, axis=1)
+                for ring_idx, tth_range in enumerate(tth_ranges):
+                    # Slice radial axis to this ring's ROI
+                    tth_mask    = (tth >= tth_range[0]) & (tth <= tth_range[1])
+                    tth_roi     = tth[tth_mask]
+                    intensity_roi = intensity_2d[:, tth_mask]  # (npt_azim, n_roi_bins)
 
-                metrics = compute_ring_statistics(mean_i, azimuth)
+                    # Per-azimuthal-bin statistics collapsed over the radial ROI
+                    mean_i = np.nanmean(intensity_roi, axis=1)  # (npt_azim,)
+                    std_i  = np.nanstd(intensity_roi, axis=1)
 
-                # Save per-bin profile
-                np.savetxt(
-                    output_dat,
-                    np.column_stack((azimuth, mean_i, std_i)),
-                    header="gamma  mean  std",
-                    comments="",
-                )
+                    metrics = compute_ring_statistics(mean_i, azimuth)
 
-                # --- Plot ---
-                fig, axes = plt.subplots(
-                    4, 1, figsize=(9, 17),
-                    gridspec_kw={"height_ratios": [3, 1, 3, 2]},
-                )
-
-                # Panel 1: Caked image (log scale)
-                pos_2d = intensity_2d.copy()
-                pos_2d[pos_2d <= 0] = np.nan
-                axes[0].imshow(
-                    pos_2d,
-                    aspect="auto",
-                    origin="lower",
-                    extent=[tth.min(), tth.max(), azimuth.min(), azimuth.max()],
-                    cmap="viridis",
-                    norm=LogNorm(
-                        vmin=np.nanpercentile(pos_2d, 1),
-                        vmax=np.nanpercentile(pos_2d, 99),
-                    ),
-                )
-                axes[0].axvline(tth_range[0], color="red", lw=1.2, ls="--", label="ROI")
-                axes[0].axvline(tth_range[1], color="red", lw=1.2, ls="--")
-                axes[0].set_xlabel(r"2$\theta$ (deg)", fontsize=13)
-                axes[0].set_ylabel(r"$\gamma$ (deg)", fontsize=13)
-                axes[0].set_title(
-                    f"{base_name} (scan {scan_point}) — Caked Image", fontsize=13
-                )
-                axes[0].legend(fontsize=10, loc="upper right")
-
-                # Panel 2: ROI interior heatmap (1/3 height, log scale)
-                roi_pos = intensity_roi.T.copy()
-                roi_pos[roi_pos <= 0] = np.nan
-                axes[1].imshow(
-                    roi_pos,
-                    aspect="auto",
-                    origin="lower",
-                    extent=[azimuth.min(), azimuth.max(), tth_roi.min(), tth_roi.max()],
-                    cmap="viridis",
-                    norm=LogNorm(
-                        vmin=np.nanpercentile(roi_pos, 1),
-                        vmax=np.nanpercentile(roi_pos, 99),
-                    ),
-                )
-                axes[1].set_xlabel(r"$\gamma$ (deg)", fontsize=13)
-                axes[1].set_ylabel(r"2$\theta$ (deg)", fontsize=13)
-                axes[1].set_title("ROI Interior — radial vs. azimuthal", fontsize=13)
-
-                # Panel 3: Intensity vs gamma (log scale)
-                axes[2].plot(azimuth, mean_i, lw=2, color="steelblue", label="Mean over ROI")
-                axes[2].fill_between(
-                    azimuth,
-                    mean_i - std_i,
-                    mean_i + std_i,
-                    alpha=0.3,
-                    color="steelblue",
-                    label="±1 std",
-                )
-
-                # Mark detected texture peaks
-                if metrics["n_texture_peaks"] > 0:
-                    peak_intensities = mean_i[
-                        np.round(
-                            np.interp(
-                                metrics["peak_positions"],
-                                azimuth,
-                                np.arange(len(azimuth)),
-                            )
-                        ).astype(int)
-                    ]
-                    axes[2].scatter(
-                        metrics["peak_positions"],
-                        peak_intensities,
-                        color="red", zorder=5, s=50,
-                        label=f"Texture peaks (n={metrics['n_texture_peaks']})",
+                    # Save per-bin profile for this ring
+                    output_dat = os.path.join(
+                        dirpath, f"{base_name}_ring{ring_idx}_stats.dat"
                     )
-                    for pos, intensity in zip(metrics["peak_positions"], peak_intensities):
-                        axes[2].annotate(
-                            f"{pos:.1f}°",
-                            xy=(pos, intensity),
-                            xytext=(0, 8),
-                            textcoords="offset points",
-                            ha="center", fontsize=8, color="red",
-                        )
-                axes[2].set_xlabel(r"$\gamma$ (deg)", fontsize=13)
-                axes[2].set_ylabel("Intensity", fontsize=13)
-                axes[2].set_title(
-                    f"Intensity vs. gamma  ROI: {tth_range[0]}-{tth_range[1]} deg",
-                    fontsize=13,
-                )
-                axes[2].set_yscale("log")
-                axes[2].legend(fontsize=10)
+                    np.savetxt(
+                        output_dat,
+                        np.column_stack((azimuth, mean_i, std_i)),
+                        header="gamma  mean  std",
+                        comments="",
+                    )
+                    print(f"Saved: {output_dat}")
 
-                # Panel 4: CWT scalogram
-                coeffs = metrics["cwt_coefficients"]  # (n_scales, npt_azim)
-                n_scales = coeffs.shape[0]
-                d_gamma = float(np.median(np.diff(azimuth)))
-                scale_axis_min = 1 * d_gamma
-                scale_axis_max = n_scales * d_gamma
-                axes[3].imshow(
-                    np.abs(coeffs),
-                    aspect="auto",
-                    origin="lower",
-                    extent=[azimuth.min(), azimuth.max(), scale_axis_min, scale_axis_max],
-                    cmap="hot",
-                )
-                axes[3].set_xlabel(r"$\gamma$ (deg)", fontsize=13)
-                axes[3].set_ylabel("Scale (deg)", fontsize=13)
-                axes[3].set_title(
-                    f"CWT Scalogram (Mexican hat)  —  dominant scale: "
-                    f"{metrics['cwt_dominant_scale_deg']:.1f}°",
-                    fontsize=11,
-                )
+                    rings_data.append({
+                        "mean_i":        mean_i,
+                        "std_i":         std_i,
+                        "azimuth":       azimuth,
+                        "metrics":       metrics,
+                        "tth_range":     tth_range,
+                        "intensity_2d":  intensity_2d,   # full caked image (shared)
+                        "tth":           tth,             # full radial axis (shared)
+                        "intensity_roi": intensity_roi,
+                        "tth_roi":       tth_roi,
+                    })
 
-                for ax in axes:
-                    ax.tick_params(axis="both", which="major", labelsize=12)
+                    csv_ring_metrics[ring_idx] = {k: metrics[k] for k in scalar_keys}
 
-                plt.tight_layout()
-                plt.savefig(output_png, dpi=150)
-                plt.close()
+                # --- Multi-column diagnostic plot (one PNG per image) ---
+                plot_ring_metrics(rings_data, base_name, output_png)
 
-                print(f"Saved: {output_dat}, {output_png}")
-
-                subfolder_results[base_name] = {
+                # --- Accumulate CSV row ---
+                csv_row = {
+                    "sample":     base_name,
                     "scan_point": scan_point,
-                    "tth": tth,
-                    "azimuth": azimuth,
-                    "intensity_2d": intensity_2d,
-                    "intensity_roi": intensity_roi,
-                    "mean": mean_i,
-                    "std": std_i,
-                    **metrics,
                 }
+                for ring_idx in range(n_rings):
+                    csv_row[ring_idx] = csv_ring_metrics[ring_idx]
+                csv_rows.append(csv_row)
 
-                csv_rows.append({
-                    "sample": base_name,
-                    "scan_point": scan_point,
-                    **{k: metrics[k] for k in scalar_keys},
-                })
+                # --- Store in result dict ---
+                subfolder_results[base_name] = {
+                    "scan_point":   scan_point,
+                    "tth":          tth,
+                    "azimuth":      azimuth,
+                    "intensity_2d": intensity_2d,
+                    "rings":        rings_data,
+                }
 
             except Exception as exc:
                 print(f"Failed to process {input_path}: {exc}")
@@ -309,7 +243,7 @@ def azimuthal_ring_statistics(
         # Write one CSV per subfolder
         if csv_rows:
             csv_path = os.path.join(dirpath, "ring_metrics_summary.csv")
-            _write_subfolder_csv(csv_path, csv_rows, scalar_keys)
+            _write_subfolder_csv(csv_path, csv_rows, n_rings, scalar_keys)
 
         all_results[subfolder_label] = subfolder_results
 
@@ -320,4 +254,5 @@ if __name__ == "__main__":
     azimuthal_ring_statistics(
         input_directory=Inputs.root_dir,
         poni_file=Inputs.poni_file,
+        tth_ranges=Inputs.tth_ranges,
     )

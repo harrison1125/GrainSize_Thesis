@@ -1,6 +1,6 @@
 """
-plot_metrics_composite.py
--------------------------
+metricplot.py
+-------------
 Walks input_directory recursively, finds every ring_metrics_summary.csv
 produced by azimuthal_ring_statistics.py, and generates one composite figure
 per subfolder with one subplot per metric plotted against scan point integer.
@@ -8,7 +8,7 @@ per subfolder with one subplot per metric plotted against scan point integer.
 Output figures are saved alongside each CSV as ring_metrics_composite.png.
 
 Run independently after azimuthal_ring_statistics.py:
-    python plot_metrics_composite.py
+    python metricplot.py
 """
 
 import os
@@ -24,12 +24,12 @@ import Inputs
 SUMMARY_FILENAME = "ring_metrics_summary.csv"
 OUTPUT_FILENAME  = "ring_metrics_composite.png"
 
-# Ring indices to plot and their display labels.
-# Index corresponds to the order of tth_ranges passed to
-# azimuthal_ring_statistics(). Add or remove entries to match your run.
+# Ring indices and display labels are derived automatically from Inputs.tth_ranges
+# so this list stays in sync without manual editing. Override here if you want
+# custom labels or a subset of rings.
 RINGS = [
-    (0, "Ring 0"),
-    (1, "Ring 1"),
+    (i, f"Ring {i}  ({lo}–{hi}°)")
+    for i, (lo, hi) in enumerate(Inputs.tth_ranges)
 ]
 
 # Base metric keys and display labels. Do not include ring prefixes here —
@@ -194,7 +194,7 @@ if __name__ == "__main__":
             continue
 
         found = True
-        csv_path = os.path.join(dirpath, SUMMARY_FILENAME)
+        csv_path   = os.path.join(dirpath, SUMMARY_FILENAME)
         output_png = os.path.join(dirpath, OUTPUT_FILENAME)
         subfolder_label = os.path.relpath(dirpath, Inputs.root_dir) or "root"
 
