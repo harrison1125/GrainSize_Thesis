@@ -1,22 +1,20 @@
 """
-ring_metrics.py
----------------
-Statistical metrics for characterizing diffraction ring profiles.
+ring_metrics_cwt.py  —  SANDBOX VERSION of ring_metrics.py
+------------------------------------------------------------
+Identical to ring_metrics.py with one change in _wavelet_peak_analysis:
 
-Intended to be called with the output of azimuthal_ring_statistics.py.
-Pass the per-azimuthal-bin mean intensity array and azimuth axis to
-compute_ring_statistics() to get a dict of scalar metrics, then call
-plot_ring_metrics() to produce the annotated diagnostic plot.
+    scale_avg_power = np.mean(coeffs ** 2, axis=0)   # original
+    scale_max_power = np.max(coeffs ** 2, axis=0)    # this file
 
-Typical usage
--------------
-    from ring_analysis.azimuthal_ring_statistics import azimuthal_ring_statistics
-    from ring_analysis.ring_metrics import compute_ring_statistics, plot_ring_metrics
+find_peaks is run on scale_max_power instead of scale_avg_power. Taking
+the per-position maximum across scales preserves the full CWT response at
+whichever scale best matches each feature's angular width, rather than
+diluting it by averaging across all 30 scales. Background variation at
+large scales no longer inflates the effective detection threshold.
 
-    results = azimuthal_ring_statistics(input_dir, poni_file)
-    for name, r in results.items():
-        metrics = compute_ring_statistics(r["mean"], r["azimuth"])
-        plot_ring_metrics(r["mean"], r["std"], r["azimuth"], metrics, name, output_png)
+The returned dict key is renamed cwt_scale_max_power_profile to make it
+clear which signal was used, but all other key names are unchanged so
+cwt_statistics.py can import this module as a drop-in replacement.
 """
 
 import numpy as np
@@ -158,10 +156,14 @@ def _wavelet_peak_analysis(
     matches the wavelet scale, making it well-suited for detecting texture
     spots of varying angular width on a smooth background.
 
-    The CWT produces a 2D coefficient matrix (scale x position). Peaks in
-    the scale-averaged power indicate where texture spots are located
-    regardless of their angular width. The dominant scale at each peak
-    reflects the angular width of the corresponding grain cluster.
+    The CWT produces a 2D coefficient matrix (scale x position). This
+    implementation runs find_peaks on the per-position MAXIMUM power across
+    all scales (scale_max_power) rather than the mean. Taking the max
+    preserves the full CWT response at whichever scale best matches each
+    feature's angular width, rather than diluting it by averaging across
+    scales where the feature has little response. This improves sensitivity
+    for narrow texture spots and eliminates the suppression caused by
+    broad-scale background variation inflating the effective threshold.
 
     Parameters
     ----------
@@ -192,11 +194,14 @@ def _wavelet_peak_analysis(
 
     coeffs = _cwt(s, ricker, scales)  # shape: (n_scales, npt_azim)
 
-    scale_avg_power = np.mean(coeffs ** 2, axis=0)  # shape: (npt_azim,)
+    # KEY CHANGE: max across scales instead of mean.
+    # Each position retains the power from its single most-responsive scale,
+    # preventing averaging dilution across irrelevant scales.
+    scale_max_power = np.max(coeffs ** 2, axis=0)  # shape: (npt_azim,)
 
-    if scale_avg_power.max() > 0:
-        prominence = scale_avg_power.std() * 0.2
-        peaks_idx, _ = find_peaks(scale_avg_power, prominence=prominence, distance=2)
+    if scale_max_power.max() > 0:
+        prominence = scale_max_power.std() * 0.1
+        peaks_idx, _ = find_peaks(scale_max_power, prominence=prominence, distance=1)
     else:
         peaks_idx = np.array([], dtype=int)
 
@@ -516,8 +521,8 @@ def compute_ring_statistics(
     acf_bins    = _autocorrelation_length(mean_i)
     acf_deg     = acf_bins * d_gamma
 
-    prominence = std_val * 0.2
-    peaks_idx, _ = find_peaks(mean_i, prominence=prominence, distance=2)
+    prominence = std_val * 0.1
+    peaks_idx, _ = find_peaks(mean_i, prominence=prominence, distance=1)
     peak_positions = azimuth[peaks_idx].tolist()
 
     completeness = float(np.sum(mean_i > noise_threshold) / len(mean_i))
