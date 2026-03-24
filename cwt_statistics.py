@@ -1,21 +1,24 @@
 """
-cwt_statistics.py  —  SANDBOX VERSION of azimuthal_ring_statistics.py
------------------------------------------------------------------------
-Identical to GSD_statistics.py (rows 0-5) with two additional histogram
-rows appended to each per-image diagnostic PNG:
+cwt_statistics.py
+-----------------
+Walks Inputs.root_dir recursively, integrates each TIFF azimuthally, computes
+ring metrics via ring_metrics_cwt.compute_ring_statistics(), and writes:
 
-  Row 5 — find_peaks histogram: mean_i at each find_peaks detection
-           (n_texture_peaks spots), carried over from GSD_statistics.py.
-  Row 6 — CWT intensity histogram: mean_i at each CWT peak position.
-           Directly comparable to Row 5 — same y-axis quantity, different
-           peak detector, so differences reveal detector disagreement.
-  Row 7 — CWT coefficient histogram: scale-averaged CWT power at each CWT
-           peak position. This is a CWT-native quantity; large values
-           indicate peaks with strong, scale-consistent wavelet response
-           (i.e. likely real texture spots rather than noise spikes).
+  - Per-image diagnostic PNGs with eight rows:
+      0 — Full caked image (log) with ROI boundaries
+      1 — ROI interior heatmap
+      2 — Intensity vs gamma with peak markers and metrics box
+      3 — CWT scalogram
+      4 — Fourier spectrum
+      5 — find_peaks intensity histogram
+      6 — CWT intensity histogram (same quantity as row 5, different detector)
+      7 — CWT scale-max power histogram
 
-Comparing Rows 6 and 7 shows whether high mean_i peaks also have high CWT
-power — if they do, those are the most credible texture detections.
+  - Per-subfolder ring_metrics_summary.csv
+
+Comparing rows 5 and 6 reveals agreement or disagreement between the
+find_peaks and CWT detectors. Row 7 confirms which CWT detections have
+strong, scale-consistent wavelet responses (likely real texture spots).
 
 Run independently:
     python cwt_statistics.py
@@ -529,7 +532,7 @@ def cwt_statistics(
     n_rings = len(tth_ranges)
 
     ai = AzimuthalIntegrator()
-    ai.load(poni_file)
+    ai.load(str(poni_file))
 
     subfolders: dict[str, list] = {}
     for dirpath, _, filenames in os.walk(input_directory):
