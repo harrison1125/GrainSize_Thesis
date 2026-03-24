@@ -1,0 +1,6 @@
+SOURCE: scan_point_63.mca
+KEY: 1.1.00001.1
+Element  Group  Fit_Area  Sigma_Area  Mass_fraction  Layer0  
+Ti  K  5.652679e+03  8.79e+01  1  1  
+V  K  1.744315e+02  4.13e+01  0.01924  0.01924  
+
