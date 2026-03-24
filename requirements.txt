@@ -1,5 +1,5 @@
 numpy
 scipy
 matplotlib
-fabio
+h5py
 pyFAI
