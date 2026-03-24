@@ -23,15 +23,18 @@ tth_ranges : list of tuple of float
     scripts (metricplot.py, temp_runner.py) read the RINGS config list, which
     should be updated to match.
 """
-root_dir    = "/Users/hpark108/Desktop/Data in MAXIMA Paper/Combinatorial Figure"
+root_dir    = "/Users/hpark108/Projects/GrainSize_Qualitative"
 poni_file   = '/Users/hpark108/Desktop/Immediate/updated xrf.poni'
 config_path = '/Users/hpark108/Desktop/Immediate/aimdpaper.cfg'
 
-tth_ranges = [
-    (13.5,14.5),
-    (15.5, 17.0),   # Ring 0
-    (22.5, 24.5),   # Ring 1
+tth_ranges = [(12,14),(15,16),(20,21)]
+
+#
+#tth_ranges = [
+#    (13.5,14.5),
+#    (15.5, 17.0),
+#    (22.5, 24.5),
     # Add additional (tth_lo, tth_hi) pairs here as needed.
     # Remember to update the RINGS list in metricplot.py and temp_runner.py
     # to match (same count, same index order).
-]
+#]
