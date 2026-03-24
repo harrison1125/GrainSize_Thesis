@@ -1,7 +1,9 @@
 """
 cwt_statistics.py
 -----------------
-Walks Inputs.root_dir recursively, integrates each TIFF azimuthally, computes
+Walks the raw/ subdirectory of each SampleData folder under Inputs.root_dir,
+finds every *_master.h5 file (Dectris Eiger NeXus format), reads the detector
+image from entry/data/data_000001, integrates azimuthally via pyFAI, computes
 ring metrics via ring_metrics_cwt.compute_ring_statistics(), and writes:
 
   - Per-image diagnostic PNGs with eight rows:
@@ -27,7 +29,7 @@ Run independently:
 import os
 import re
 import csv
-import fabio
+import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
@@ -536,10 +538,13 @@ def cwt_statistics(
 
     subfolders: dict[str, list] = {}
     for dirpath, _, filenames in os.walk(input_directory):
+        # Only look inside raw/ subdirectories for master HDF5 files.
+        if os.path.basename(dirpath) != "raw":
+            continue
         for filename in filenames:
-            base_name, ext = os.path.splitext(filename)
-            if ext.lower() not in (".tif", ".tiff"):
+            if not filename.endswith("_master.h5"):
                 continue
+            base_name = filename[: -len("_master.h5")]   # e.g. "scan_point_0"
             scan_point = _extract_scan_point(base_name)
             subfolders.setdefault(dirpath, []).append(
                 (scan_point, filename, base_name)
@@ -551,16 +556,19 @@ def cwt_statistics(
     all_results = {}
 
     for dirpath, file_list in subfolders.items():
-        subfolder_label = os.path.relpath(dirpath, input_directory) or "root"
+        # Output goes to the SampleData folder (parent of raw/).
+        output_dir = os.path.dirname(dirpath)
+        subfolder_label = os.path.relpath(output_dir, input_directory) or "root"
         subfolder_results = {}
         csv_rows = []
 
         for scan_point, filename, base_name in file_list:
             input_path = os.path.join(dirpath, filename)
-            output_png = os.path.join(dirpath, f"{base_name}_ring_stats.png")
+            output_png = os.path.join(output_dir, f"{base_name}_ring_stats.png")
 
             try:
-                image = fabio.open(input_path).data
+                with h5py.File(input_path, "r") as f:
+                    image = f["entry/data/data_000001"][0].astype(np.float32)
 
                 intensity_2d, tth, azimuth = ai.integrate2d(
                     image,
@@ -584,7 +592,7 @@ def cwt_statistics(
                     metrics = compute_ring_statistics(mean_i, azimuth)
 
                     output_dat = os.path.join(
-                        dirpath, f"{base_name}_ring{ring_idx}_stats.dat"
+                        output_dir, f"{base_name}_ring{ring_idx}_stats.dat"
                     )
                     np.savetxt(
                         output_dat,
@@ -628,7 +636,7 @@ def cwt_statistics(
                 print(f"Failed to process {input_path}: {exc}")
 
         if csv_rows:
-            csv_path = os.path.join(dirpath, "ring_metrics_summary.csv")
+            csv_path = os.path.join(output_dir, "ring_metrics_summary.csv")
             _write_subfolder_csv(csv_path, csv_rows, n_rings, scalar_keys)
 
         all_results[subfolder_label] = subfolder_results
