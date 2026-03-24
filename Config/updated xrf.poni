@@ -1,0 +1,14 @@
+# Nota: C-Order, 1 refers to the Y axis, 2 to the X axis
+# Calibration done on Wed Oct  1 11:29:21 2025
+poni_version: 2.1
+Detector: Eiger2CdTe_1M
+Detector_config: {"orientation": 3}
+Distance: 0.09651236884623555
+Poni1: 0.039662344671086605
+Poni2: 0.03727952859632144
+Rot1: -0.01168776964776572
+Rot2: -0.008501688260352608
+Rot3: 0.0
+Wavelength: 5.121197787410171e-11
+# Calibrant: alpha_Al2O3
+# Image: fabio:///Users/hpark108/Downloads/20250930 updated XRF run/JHAMAC00001-S3R6C1_JHAMAC00001-S3R6C1_1_1_2025-09-29_17-28-24/scan_point_0.tiff

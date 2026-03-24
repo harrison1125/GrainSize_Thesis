@@ -1,20 +1,24 @@
 """
-ring_metrics_cwt.py  —  SANDBOX VERSION of ring_metrics.py
-------------------------------------------------------------
-Identical to ring_metrics.py with one change in _wavelet_peak_analysis:
+ring_metrics_cwt.py
+--------------------
+Core metric computation module for azimuthal ring analysis.
 
-    scale_avg_power = np.mean(coeffs ** 2, axis=0)   # original
-    scale_max_power = np.max(coeffs ** 2, axis=0)    # this file
+Computes a suite of statistics from the azimuthal intensity profile of each
+diffraction ring, including CWT-based peak detection, texture index, Fourier
+ODF coefficients, fiber symmetry index, and Warren grain proxy.
 
-find_peaks is run on scale_max_power instead of scale_avg_power. Taking
-the per-position maximum across scales preserves the full CWT response at
-whichever scale best matches each feature's angular width, rather than
-diluting it by averaging across all 30 scales. Background variation at
-large scales no longer inflates the effective detection threshold.
+CWT peak detection note
+-----------------------
+Peak detection runs on the per-position MAXIMUM power across all scales
+(scale_max_power) rather than the mean. Taking the max preserves the full
+CWT response at whichever scale best matches each feature's angular width,
+rather than diluting it by averaging across scales where the feature has
+little response. Background variation at large scales no longer inflates the
+effective detection threshold.
 
-The returned dict key is renamed cwt_scale_max_power_profile to make it
-clear which signal was used, but all other key names are unchanged so
-cwt_statistics.py can import this module as a drop-in replacement.
+The returned dict key cwt_scale_max_power_profile records which signal was
+used; all other key names match the original azimuthal_ring_statistics output
+so this module is a drop-in replacement.
 """
 
 import numpy as np

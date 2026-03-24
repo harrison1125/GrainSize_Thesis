@@ -1,13 +1,13 @@
 """
 metricplot.py
 -------------
-Walks input_directory recursively, finds every ring_metrics_summary.csv
-produced by azimuthal_ring_statistics.py, and generates one composite figure
-per subfolder with one subplot per metric plotted against scan point integer.
+Walks Inputs.root_dir recursively, finds every ring_metrics_summary.csv
+produced by cwt_statistics.py, and generates one composite figure per
+subfolder with one subplot per metric plotted against scan point integer.
 
 Output figures are saved alongside each CSV as ring_metrics_composite.png.
 
-Run independently after azimuthal_ring_statistics.py:
+Run independently after cwt_statistics.py:
     python metricplot.py
 """
 
