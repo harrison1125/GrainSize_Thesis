@@ -1,0 +1,35 @@
+# --- Research Data (Binary & Large Files) ---
+*.h5
+*.edf
+*.mca
+*.xrf
+*.dat
+*.cfg
+*.xlsx
+*.csv
+
+# --- Folders to Ignore Entirely ---
+# This ignores the Config folder and any subfolders like 'raw'
+Config/
+**/raw/
+**/SampleData*/
+
+# --- Images & Plots (If you don't want them in Git) ---
+*.jpg
+*.jpeg
+*.png
+*.pdf
+*.svg
+
+# --- System Junk (Crucial for Mac users) ---
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+Thumbs.db
+
+# --- Python Junk (If you are using Python for analysis) ---
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
