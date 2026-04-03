@@ -15,7 +15,8 @@ import os
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
-import Inputs
+
+import Config.Inputs as Inputs
 
 # ---------------------------------------------------------------------------
 # Config
@@ -28,7 +29,7 @@ OUTPUT_FILENAME  = "ring_metrics_composite.png"
 # so this list stays in sync without manual editing. Override here if you want
 # custom labels or a subset of rings.
 RINGS = [
-    (i, f"Ring {i}  ({lo}–{hi}°)")
+    (i, f"Ring {i} ({lo}–{hi}°)")
     for i, (lo, hi) in enumerate(Inputs.tth_ranges)
 ]
 
@@ -36,38 +37,37 @@ RINGS = [
 # the ring{i}_ prefix is applied automatically when reading the CSV.
 METRIC_CONFIG = [
     # --- Original metrics ---
-    ("mean",                   "Mean Intensity",            "linear"),
-    ("std",                    "Std Intensity",              "linear"),
-    ("cv",                     "CV (std/mean)",              "linear"),
-    ("peak_valley",            "Peak/Valley Ratio",          "linear"),
-    ("skewness",               "Skewness",                   "linear"),
-    ("kurtosis",               "Kurtosis",                   "linear"),
-    ("entropy",                "Shannon Entropy (nats)",     "linear"),
-    ("acf_length_deg",         "ACF Length (deg)",           "linear"),
-    ("n_texture_peaks",        "N Texture Peaks",            "linear"),
-    ("completeness",           "Completeness",               "linear"),
-    ("integrated",             "Integrated Intensity",       "linear"),
+    ("mean",             "Mean Intensity",           "linear"),
+    ("std",              "Std Intensity",             "linear"),
+    ("cv",               "CV (std/mean)",             "linear"),
+    ("peak_valley",      "Peak/Valley Ratio",         "linear"),
+    ("skewness",         "Skewness",                  "linear"),
+    ("kurtosis",         "Kurtosis",                  "linear"),
+    ("entropy",          "Shannon Entropy (nats)",    "linear"),
+    ("acf_length_deg",   "ACF Length (deg)",          "linear"),
+    ("n_texture_peaks",  "N Texture Peaks",           "linear"),
+    ("completeness",     "Completeness",              "linear"),
+    ("integrated",       "Integrated Intensity",      "linear"),
     # --- Texture / ODF metrics ---
-    ("texture_index",          "Texture Index F2",           "linear"),
-    ("fourier_c2",             "Fourier C2 (two-fold)",      "linear"),
-    ("fourier_c4",             "Fourier C4 (four-fold)",     "linear"),
-    ("fourier_c6",             "Fourier C6 (six-fold)",      "linear"),
+    ("texture_index",    "Texture Index F2",          "linear"),
+    ("fourier_c2",       "Fourier C2 (two-fold)",     "linear"),
+    ("fourier_c4",       "Fourier C4 (four-fold)",    "linear"),
+    ("fourier_c6",       "Fourier C6 (six-fold)",     "linear"),
     # --- Peak shape metrics ---
-    ("peak_fwhm_mean_deg",     "Peak FWHM Mean (deg)",       "linear"),
-    ("peak_fwhm_std_deg",      "Peak FWHM Std (deg)",        "linear"),
-    ("peak_asymmetry_mean",    "Peak Asymmetry Mean",        "linear"),
+    ("peak_fwhm_mean_deg",  "Peak FWHM Mean (deg)",  "linear"),
+    ("peak_fwhm_std_deg",   "Peak FWHM Std (deg)",   "linear"),
+    ("peak_asymmetry_mean", "Peak Asymmetry Mean",   "linear"),
     # --- Symmetry / balance metrics ---
-    ("fiber_symmetry_index",   "Fiber Symmetry Index",       "linear"),
-    ("arc_imbalance",          "Arc Imbalance",              "linear"),
+    ("fiber_symmetry_index", "Fiber Symmetry Index", "linear"),
+    ("arc_imbalance",        "Arc Imbalance",         "linear"),
     # --- Grain statistics ---
-    ("warren_grain_proxy",     "Warren Grain Proxy",         "linear"),
+    ("warren_grain_proxy",   "Warren Grain Proxy",    "linear"),
     # --- CWT metrics ---
-    ("cwt_n_peaks",            "CWT N Peaks",                "linear"),
-    ("cwt_dominant_scale_deg", "CWT Dominant Scale (deg)",   "linear"),
-    ("cwt_total_power",        "CWT Total Power",            "linear"),
-    ("cwt_scale_entropy",      "CWT Scale Entropy",          "linear"),
+    ("cwt_n_peaks",           "CWT N Peaks",              "linear"),
+    ("cwt_dominant_scale_deg","CWT Dominant Scale (deg)", "linear"),
+    ("cwt_total_power",       "CWT Total Power",          "linear"),
+    ("cwt_scale_entropy",     "CWT Scale Entropy",        "linear"),
 ]
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -145,12 +145,12 @@ def plot_composite(
         n_metrics, n_rings,
         figsize=(7 * n_rings, 3.5 * n_metrics),
         sharex=True,
-        squeeze=False,   # always 2-D axes array even for n_rings == 1
+        squeeze=False,  # always 2-D axes array even for n_rings == 1
     )
 
     for row, (key, label, scale) in enumerate(METRIC_CONFIG):
         for col, (ring_idx, ring_label) in enumerate(RINGS):
-            ax = axes[row, col]
+            ax        = axes[row, col]
             ring_data = data.get(ring_idx, {})
 
             if key not in ring_data:
@@ -188,14 +188,12 @@ def plot_composite(
 
 if __name__ == "__main__":
     found = False
-
     for dirpath, _, filenames in os.walk(Inputs.root_dir):
         if SUMMARY_FILENAME not in filenames:
             continue
-
         found = True
-        csv_path   = os.path.join(dirpath, SUMMARY_FILENAME)
-        output_png = os.path.join(dirpath, OUTPUT_FILENAME)
+        csv_path    = os.path.join(dirpath, SUMMARY_FILENAME)
+        output_png  = os.path.join(dirpath, OUTPUT_FILENAME)
         subfolder_label = os.path.relpath(dirpath, Inputs.root_dir) or "root"
 
         try:

@@ -6,17 +6,17 @@ finds every *_master.h5 file (Dectris Eiger NeXus format), reads the detector
 image from entry/data/data_000001, integrates azimuthally via pyFAI, computes
 ring metrics via ring_metrics_cwt.compute_ring_statistics(), and writes:
 
-  - Per-image diagnostic PNGs with eight rows:
-      0 — Full caked image (log) with ROI boundaries
-      1 — ROI interior heatmap
-      2 — Intensity vs gamma with peak markers and metrics box
-      3 — CWT scalogram
-      4 — Fourier spectrum
-      5 — find_peaks intensity histogram
-      6 — CWT intensity histogram (same quantity as row 5, different detector)
-      7 — CWT scale-max power histogram
+- Per-image diagnostic PNGs with eight rows:
+  0 — Full caked image (log) with ROI boundaries
+  1 — ROI interior heatmap
+  2 — Intensity vs gamma with peak markers and metrics box
+  3 — CWT scalogram
+  4 — Fourier spectrum
+  5 — find_peaks intensity histogram
+  6 — CWT intensity histogram (same quantity as row 5, different detector)
+  7 — CWT scale-max power histogram
 
-  - Per-subfolder ring_metrics_summary.csv
+- Per-subfolder ring_metrics_summary.csv
 
 Comparing rows 5 and 6 reveals agreement or disagreement between the
 find_peaks and CWT detectors. Row 7 confirms which CWT detections have
@@ -34,12 +34,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from pyFAI.integrator.azimuthal import AzimuthalIntegrator
-from ring_metrics_cwt import compute_ring_statistics
-import Inputs
 
+from Analysis.ring_metrics_cwt import compute_ring_statistics
+import Config.Inputs as Inputs
 
 # ---------------------------------------------------------------------------
-# Private helpers  (unchanged from azimuthal_ring_statistics.py)
+# Private helpers (unchanged from azimuthal_ring_statistics.py)
 # ---------------------------------------------------------------------------
 
 def _extract_scan_point(base_name: str) -> int:
@@ -80,7 +80,7 @@ def _write_subfolder_csv(
     scalar_keys : list of str
         Metric column names to include (excluding sample and scan_point).
     """
-    ring_cols  = [f"ring{i}_{key}" for i in range(n_rings) for key in scalar_keys]
+    ring_cols = [f"ring{i}_{key}" for i in range(n_rings) for key in scalar_keys]
     fieldnames = ["sample", "scan_point"] + ring_cols
 
     with open(csv_path, "w", newline="") as csvfile:
@@ -93,6 +93,7 @@ def _write_subfolder_csv(
                 for key in scalar_keys:
                     flat[f"ring{i}_{key}"] = ring_metrics.get(key, "")
             writer.writerow(flat)
+
     print(f"Saved summary: {csv_path}")
 
 
@@ -143,7 +144,7 @@ def _plot_ring_metrics_with_cwt_histograms(
     def _fmt(v, digits=3):
         return f"{v:.{digits}f}" if np.isfinite(v) else "nan"
 
-    n_rings   = len(rings)
+    n_rings = len(rings)
     fig_width = max(11, 7 * n_rings)
 
     fig, axes = plt.subplots(
@@ -164,8 +165,8 @@ def _plot_ring_metrics_with_cwt_histograms(
         intensity_roi = ring.get("intensity_roi")
         tth_roi       = ring.get("tth_roi")
 
-        d_gamma    = float(np.median(np.diff(azimuth)))
-        n_scales   = metrics["cwt_coefficients"].shape[0]
+        d_gamma   = float(np.median(np.diff(azimuth)))
+        n_scales  = metrics["cwt_coefficients"].shape[0]
         scale_axis = np.arange(1, n_scales + 1) * d_gamma
 
         col_title = (
@@ -268,19 +269,19 @@ def _plot_ring_metrics_with_cwt_histograms(
             )
 
         metrics_str = (
-            f"CV={_fmt(metrics['cv'])}  P/V={_fmt(metrics['peak_valley'], 2)}  "
+            f"CV={_fmt(metrics['cv'])} P/V={_fmt(metrics['peak_valley'], 2)} "
             f"TI={_fmt(metrics['texture_index'], 3)}\n"
-            f"Kurt={_fmt(metrics['kurtosis'], 2)}  Skew={_fmt(metrics['skewness'], 2)}  "
+            f"Kurt={_fmt(metrics['kurtosis'], 2)} Skew={_fmt(metrics['skewness'], 2)} "
             f"Warren={_fmt(metrics['warren_grain_proxy'], 4)}\n"
-            f"Entropy={_fmt(metrics['entropy'])}  ACF={_fmt(metrics['acf_length_deg'], 1)}°  "
+            f"Entropy={_fmt(metrics['entropy'])} ACF={_fmt(metrics['acf_length_deg'], 1)}° "
             f"FSI={_fmt(metrics['fiber_symmetry_index'], 3)}\n"
-            f"C2={_fmt(metrics['fourier_c2'], 3)}  C4={_fmt(metrics['fourier_c4'], 3)}  "
-            f"C6={_fmt(metrics['fourier_c6'], 3)}  ArcImbal={_fmt(metrics['arc_imbalance'], 3)}\n"
+            f"C2={_fmt(metrics['fourier_c2'], 3)} C4={_fmt(metrics['fourier_c4'], 3)} "
+            f"C6={_fmt(metrics['fourier_c6'], 3)} ArcImbal={_fmt(metrics['arc_imbalance'], 3)}\n"
             f"FWHM={_fmt(metrics['peak_fwhm_mean_deg'], 1)}°"
-            f"±{_fmt(metrics['peak_fwhm_std_deg'], 1)}°  "
+            f"±{_fmt(metrics['peak_fwhm_std_deg'], 1)}° "
             f"PkAsym={_fmt(metrics['peak_asymmetry_mean'], 3)}\n"
-            f"CWT power={_fmt(metrics['cwt_total_power'], 2)}  "
-            f"dom.scale={_fmt(metrics['cwt_dominant_scale_deg'], 1)}°  "
+            f"CWT power={_fmt(metrics['cwt_total_power'], 2)} "
+            f"dom.scale={_fmt(metrics['cwt_dominant_scale_deg'], 1)}° "
             f"scale_ent={_fmt(metrics['cwt_scale_entropy'], 2)}"
         )
         ax2.text(
@@ -319,10 +320,10 @@ def _plot_ring_metrics_with_cwt_histograms(
         # Row 4: Fourier spectrum
         # ------------------------------------------------------------------
         ax4 = axes[4, ci]
-        s        = np.nan_to_num(mean_i, nan=float(np.nanmean(mean_i)))
+        s = np.nan_to_num(mean_i, nan=float(np.nanmean(mean_i)))
         fft_amps = np.abs(np.fft.rfft(s)) / len(s)
-        c0_amp   = fft_amps[0]
-        orders   = np.arange(len(fft_amps))
+        c0_amp = fft_amps[0]
+        orders = np.arange(len(fft_amps))
         norm_amps = (
             np.where(orders == 0, fft_amps / c0_amp, 2 * fft_amps / c0_amp)
             if c0_amp > 0 else fft_amps
@@ -342,7 +343,7 @@ def _plot_ring_metrics_with_cwt_histograms(
                 )
         ax4.set_xlabel("Fourier Order", fontsize=11)
         ax4.set_title(
-            "Fourier Spectrum  (C2=two-fold, C4=four-fold, C6=six-fold)", fontsize=9,
+            "Fourier Spectrum (C2=two-fold, C4=four-fold, C6=six-fold)", fontsize=9,
         )
         ax4.set_xticks(orders[:max_order])
         ax4.tick_params(axis="both", which="major", labelsize=10)
@@ -355,7 +356,6 @@ def _plot_ring_metrics_with_cwt_histograms(
         # ------------------------------------------------------------------
         ax5 = axes[5, ci]
         n_peaks = metrics["n_texture_peaks"]
-
         if n_peaks == 0:
             ax5.text(
                 0.5, 0.5, "No texture peaks detected",
@@ -373,7 +373,7 @@ def _plot_ring_metrics_with_cwt_histograms(
                     np.arange(len(azimuth)),
                 )
             ).astype(int)
-            peak_intensities = mean_i[peak_idx]   # one value per detected peak
+            peak_intensities = mean_i[peak_idx]  # one value per detected peak
 
             # 'auto' binning: with small n_peaks this naturally gives
             # one bin per peak, which is the most informative view.
@@ -387,21 +387,19 @@ def _plot_ring_metrics_with_cwt_histograms(
             )
             ax5.set_xlabel("Intensity at peak position", fontsize=11)
             ax5.set_title(
-                f"Peak intensity histogram  (n_texture_peaks = {n_peaks})",
+                f"Peak intensity histogram (n_texture_peaks = {n_peaks})",
                 fontsize=10,
             )
             ax5.tick_params(axis="both", which="major", labelsize=10)
             ax5.grid(axis="x", lw=0.5, alpha=0.35)
-
-        if ci == 0:
-            ax5.set_ylabel("Count", fontsize=11)
+            if ci == 0:
+                ax5.set_ylabel("Count", fontsize=11)
 
         # ------------------------------------------------------------------
         # Row 6 (NEW): Histogram of mean_i at CWT peak positions
         # ------------------------------------------------------------------
         ax6 = axes[6, ci]
         cwt_n = metrics["cwt_n_peaks"]
-
         if cwt_n == 0:
             ax6.text(
                 0.5, 0.5, "No CWT peaks detected",
@@ -418,7 +416,6 @@ def _plot_ring_metrics_with_cwt_histograms(
                 )
             ).astype(int)
             cwt_mean_i = mean_i[cwt_idx]
-
             ax6.hist(
                 cwt_mean_i,
                 bins="auto",
@@ -429,20 +426,18 @@ def _plot_ring_metrics_with_cwt_histograms(
             )
             ax6.set_xlabel("mean_i at CWT peak position", fontsize=11)
             ax6.set_title(
-                f"CWT peak intensity histogram  (cwt_n_peaks = {cwt_n})",
+                f"CWT peak intensity histogram (cwt_n_peaks = {cwt_n})",
                 fontsize=10,
             )
             ax6.tick_params(axis="both", which="major", labelsize=10)
             ax6.grid(axis="x", lw=0.5, alpha=0.35)
-
-        if ci == 0:
-            ax6.set_ylabel("Count", fontsize=11)
+            if ci == 0:
+                ax6.set_ylabel("Count", fontsize=11)
 
         # ------------------------------------------------------------------
         # Row 7 (NEW): Histogram of scale-max CWT power at CWT peaks
         # ------------------------------------------------------------------
         ax7 = axes[7, ci]
-
         if cwt_n == 0:
             ax7.text(
                 0.5, 0.5, "No CWT peaks detected",
@@ -457,7 +452,6 @@ def _plot_ring_metrics_with_cwt_histograms(
             coeffs = metrics["cwt_coefficients"]
             scale_max_power = np.max(coeffs ** 2, axis=0)
             cwt_peak_power = scale_max_power[cwt_idx]
-
             ax7.hist(
                 cwt_peak_power,
                 bins="auto",
@@ -468,14 +462,13 @@ def _plot_ring_metrics_with_cwt_histograms(
             )
             ax7.set_xlabel("Scale-max CWT power at peak", fontsize=11)
             ax7.set_title(
-                f"CWT scale-max power histogram  (cwt_n_peaks = {cwt_n})",
+                f"CWT scale-max power histogram (cwt_n_peaks = {cwt_n})",
                 fontsize=10,
             )
             ax7.tick_params(axis="both", which="major", labelsize=10)
             ax7.grid(axis="x", lw=0.5, alpha=0.35)
-
-        if ci == 0:
-            ax7.set_ylabel("Count", fontsize=11)
+            if ci == 0:
+                ax7.set_ylabel("Count", fontsize=11)
 
     fig.suptitle(f"{base_name} — Ring Metrics", fontsize=14, y=1.01)
     plt.tight_layout()
@@ -532,7 +525,6 @@ def cwt_statistics(
     ]
 
     n_rings = len(tth_ranges)
-
     ai = AzimuthalIntegrator()
     ai.load(str(poni_file))
 
@@ -544,7 +536,7 @@ def cwt_statistics(
         for filename in filenames:
             if not filename.endswith("_master.h5"):
                 continue
-            base_name = filename[: -len("_master.h5")]   # e.g. "scan_point_0"
+            base_name = filename[: -len("_master.h5")]  # e.g. "scan_point_0"
             scan_point = _extract_scan_point(base_name)
             subfolders.setdefault(dirpath, []).append(
                 (scan_point, filename, base_name)
@@ -578,18 +570,16 @@ def cwt_statistics(
                     unit="2th_deg",
                 )
 
-                rings_data       = []
+                rings_data = []
                 csv_ring_metrics = {}
 
                 for ring_idx, tth_range in enumerate(tth_ranges):
-                    tth_mask      = (tth >= tth_range[0]) & (tth <= tth_range[1])
-                    tth_roi       = tth[tth_mask]
+                    tth_mask    = (tth >= tth_range[0]) & (tth <= tth_range[1])
+                    tth_roi     = tth[tth_mask]
                     intensity_roi = intensity_2d[:, tth_mask]
-
-                    mean_i = np.nanmean(intensity_roi, axis=1)
-                    std_i  = np.nanstd(intensity_roi, axis=1)
-
-                    metrics = compute_ring_statistics(mean_i, azimuth)
+                    mean_i      = np.nanmean(intensity_roi, axis=1)
+                    std_i       = np.nanstd(intensity_roi, axis=1)
+                    metrics     = compute_ring_statistics(mean_i, azimuth)
 
                     output_dat = os.path.join(
                         output_dir, f"{base_name}_ring{ring_idx}_stats.dat"
@@ -597,7 +587,7 @@ def cwt_statistics(
                     np.savetxt(
                         output_dat,
                         np.column_stack((azimuth, mean_i, std_i)),
-                        header="gamma  mean  std",
+                        header="gamma mean std",
                         comments="",
                     )
                     print(f"Saved: {output_dat}")
@@ -613,7 +603,6 @@ def cwt_statistics(
                         "intensity_roi": intensity_roi,
                         "tth_roi":       tth_roi,
                     })
-
                     csv_ring_metrics[ring_idx] = {k: metrics[k] for k in scalar_keys}
 
                 # Use local plot function (rows 0-4 unchanged, rows 5-7 new)
