@@ -37,7 +37,6 @@ from pyFAI.integrator.azimuthal import AzimuthalIntegrator
 
 from Analysis.ring_metrics_cwt import compute_ring_statistics
 import Config.Inputs as Inputs
-
 # ---------------------------------------------------------------------------
 # Private helpers (unchanged from azimuthal_ring_statistics.py)
 # ---------------------------------------------------------------------------
@@ -185,7 +184,7 @@ def _plot_ring_metrics_with_cwt_histograms(
                 pos_2d,
                 aspect="auto", origin="lower",
                 extent=[tth.min(), tth.max(), azimuth.min(), azimuth.max()],
-                cmap="viridis",
+                cmap="cividis",
                 norm=LogNorm(
                     vmin=np.nanpercentile(pos_2d, 1),
                     vmax=np.nanpercentile(pos_2d, 99),
